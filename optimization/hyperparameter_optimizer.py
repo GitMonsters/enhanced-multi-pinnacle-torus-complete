@@ -12,9 +12,9 @@ Features:
 - Real-time optimization tracking and visualization
 """
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+from tinygrad.tensor import Tensor.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, ReduceLROnPlateau
 import numpy as np
 import json

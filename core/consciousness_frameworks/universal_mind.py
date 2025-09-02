@@ -12,16 +12,19 @@ Features:
 - Adaptive consciousness states
 """
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+import tinygrad.nn.functional as F
+
+# Import TinyGrad compatibility layer
+from ..tinygrad_compatibility import Sequential, MultiheadAttention, LSTM, GRU, Sigmoid, Tanh, ReLU, Dropout
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Any
 import logging
 
 logger = logging.getLogger(__name__)
 
-class UniversalMindGenerator(nn.Module):
+class UniversalMindGenerator(object):
     """
     Universal Mind Generator for dynamic consciousness generation
     
@@ -46,7 +49,7 @@ class UniversalMindGenerator(nn.Module):
         self.positional_encoding = self._create_positional_encoding(hidden_dim)
         
         # Multi-layer attention processing
-        self.attention_layers = nn.ModuleList([
+        self.attention_layers = list([
             UniversalAttentionLayer(hidden_dim, num_heads) 
             for _ in range(num_layers)
         ])
@@ -74,9 +77,9 @@ class UniversalMindGenerator(nn.Module):
         # Output projection
         self.output_projection = nn.Linear(hidden_dim, input_dim)
         
-    def _create_positional_encoding(self, dim: int, max_len: int = 1000) -> torch.Tensor:
+    def _create_positional_encoding(self, dim: int, max_len: int = 1000) -> Tensor:
         """Create sinusoidal positional encoding"""
-        pe = torch.zeros(max_len, dim)
+        pe = Tensor.zeros(max_len, dim)
         position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
         
         div_term = torch.exp(torch.arange(0, dim, 2).float() * 
@@ -87,8 +90,8 @@ class UniversalMindGenerator(nn.Module):
         
         return pe.unsqueeze(0)
     
-    def forward(self, inputs: torch.Tensor, 
-                return_attention: bool = False) -> Dict[str, torch.Tensor]:
+    def forward(self, inputs: Tensor, 
+                return_attention: bool = False) -> Dict[str, Tensor]:
         """
         Forward pass through Universal Mind Generator
         
@@ -142,7 +145,7 @@ class UniversalMindGenerator(nn.Module):
             'consciousness_state': consciousness_state,
             'insights': insights,
             'pattern_recognition': pattern_output.squeeze(1),
-            'universal_mind_coherence': torch.mean(torch.std(consciousness_state, dim=-1))
+            'universal_mind_coherence': Tensor.mean(Tensor.std(consciousness_state, dim=-1))
         }
         
         if return_attention:
@@ -151,7 +154,7 @@ class UniversalMindGenerator(nn.Module):
         return results
 
 
-class UniversalAttentionLayer(nn.Module):
+class UniversalAttentionLayer(object):
     """Universal attention layer with residual connections and normalization"""
     
     def __init__(self, hidden_dim: int, num_heads: int):
@@ -171,7 +174,7 @@ class UniversalAttentionLayer(nn.Module):
             nn.Dropout(0.1)
         )
     
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor]:
         """Forward pass with attention and feed-forward processing"""
         
         # Self-attention with residual connection
@@ -195,7 +198,7 @@ if __name__ == "__main__":
     logger.info("Testing Universal Mind Generator...")
     
     generator = UniversalMindGenerator(input_dim=256, hidden_dim=512)
-    test_input = torch.randn(4, 256)
+    test_input = Tensor.randn(4, 256)
     
     results = generator(test_input, return_attention=True)
     

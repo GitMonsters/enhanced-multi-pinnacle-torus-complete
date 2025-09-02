@@ -14,7 +14,7 @@ Features:
 - Automated competitive analysis
 """
 
-import torch
+from tinygrad.tensor import Tensor
 import numpy as np
 import json
 import logging
@@ -399,7 +399,7 @@ class ConsciousnessSystemInterface:
         
         return metrics
     
-    def estimate_accuracy(self, predicted_solution: torch.Tensor, problem: Dict[str, Any]) -> float:
+    def estimate_accuracy(self, predicted_solution: Tensor, problem: Dict[str, Any]) -> float:
         """Estimate accuracy of prediction (simplified)"""
         # In practice, this would compare with ground truth
         # For now, we simulate based on consciousness system capabilities
@@ -1127,7 +1127,7 @@ if __name__ == "__main__":
         def __call__(self, inputs, return_detailed_analysis=False):
             batch_size = inputs.shape[0]
             return {
-                'arc_solution': torch.randn(batch_size, 900),
+                'arc_solution': Tensor.randn(batch_size, 900),
                 'success': True,
                 'processor_results': {
                     'universal_consciousness': {'consciousness_state': torch.tensor(0.8)},

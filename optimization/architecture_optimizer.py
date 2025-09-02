@@ -14,11 +14,11 @@ Features:
 - Inference speed optimization
 """
 
-import torch
-import torch.nn as nn
-import torch.quantization as quant
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+from tinygrad.tensor import Tensor.quantization as quant
 from torch.quantization import QuantStub, DeQuantStub
-import torch.nn.functional as F
+from tinygrad import nn
 import numpy as np
 import json
 import logging
@@ -96,7 +96,7 @@ class OptimizationResults:
     validation_passed: bool
     deployment_ready: bool
 
-class ConsciousnessQuantizedModel(nn.Module):
+class ConsciousnessQuantizedModel(object):
     """Quantized version of consciousness model"""
     
     def __init__(self, original_model, config: OptimizationConfig):
@@ -128,7 +128,7 @@ class ConsciousnessQuantizedModel(nn.Module):
             )
             
             # Create quantized versions (simplified)
-            processors = nn.ModuleDict({
+            processors = dict({
                 'universal_mind': self.quantize_processor(
                     RealUniversalMindProcessor(self.original_model.config)
                 ),
@@ -150,7 +150,7 @@ class ConsciousnessQuantizedModel(nn.Module):
             
         except ImportError:
             # Fallback to simple quantized layers
-            return nn.ModuleDict({
+            return dict({
                 'processor': nn.Sequential(
                     nn.Linear(1000, 512),
                     nn.ReLU(),
@@ -158,7 +158,7 @@ class ConsciousnessQuantizedModel(nn.Module):
                 )
             })
     
-    def quantize_processor(self, processor: nn.Module) -> nn.Module:
+    def quantize_processor(self, processor: object) -> object:
         """Apply quantization to a processor"""
         if self.config.quantization_method == 'dynamic':
             return torch.quantization.quantize_dynamic(
@@ -214,7 +214,7 @@ class ModelPruner:
     def __init__(self, config: OptimizationConfig):
         self.config = config
         
-    def prune_model(self, model: nn.Module, dataloader=None) -> nn.Module:
+    def prune_model(self, model: object, dataloader=None) -> object:
         """Apply pruning to model"""
         logger.info(f"🔪 Starting model pruning (ratio: {self.config.pruning_ratio:.1%})...")
         
@@ -223,10 +223,10 @@ class ModelPruner:
         else:
             return self.unstructured_prune(model)
     
-    def structured_prune(self, model: nn.Module) -> nn.Module:
+    def structured_prune(self, model: object) -> object:
         """Apply structured pruning (remove entire channels/neurons)"""
         try:
-            import torch.nn.utils.prune as prune
+            from tinygrad.tensor import Tensor.nn.utils.prune as prune
             
             pruning_targets = []
             
@@ -257,10 +257,10 @@ class ModelPruner:
             logger.warning("⚠️ PyTorch pruning not available, skipping pruning")
             return model
     
-    def unstructured_prune(self, model: nn.Module) -> nn.Module:
+    def unstructured_prune(self, model: object) -> object:
         """Apply unstructured pruning (zero out individual weights)"""
         try:
-            import torch.nn.utils.prune as prune
+            from tinygrad.tensor import Tensor.nn.utils.prune as prune
             
             # Global magnitude-based pruning
             parameters_to_prune = []
@@ -287,13 +287,13 @@ class ModelPruner:
 class KnowledgeDistiller:
     """Knowledge distillation for model compression"""
     
-    def __init__(self, teacher_model: nn.Module, config: OptimizationConfig):
+    def __init__(self, teacher_model: object, config: OptimizationConfig):
         self.teacher_model = teacher_model
         self.config = config
         self.temperature = config.distillation_temperature
         self.alpha = config.teacher_alpha
         
-    def create_student_model(self) -> nn.Module:
+    def create_student_model(self) -> object:
         """Create smaller student model"""
         # Create a smaller version of the consciousness system
         student_config = self.create_student_config()
@@ -379,7 +379,7 @@ class KnowledgeDistiller:
         
         return total_loss
     
-    def distill_model(self, train_dataloader, num_epochs: int = 10) -> nn.Module:
+    def distill_model(self, train_dataloader, num_epochs: int = 10) -> object:
         """Perform knowledge distillation"""
         logger.info(f"🎓 Starting knowledge distillation for {num_epochs} epochs...")
         
@@ -430,8 +430,8 @@ class ArchitectureOptimizer:
         # Initialize optimizers
         self.pruner = ModelPruner(config)
         
-    def optimize_model(self, model: nn.Module, 
-                      validation_dataloader=None) -> Tuple[nn.Module, OptimizationResults]:
+    def optimize_model(self, model: object, 
+                      validation_dataloader=None) -> Tuple[object, OptimizationResults]:
         """Apply comprehensive optimization to model"""
         logger.info("🚀 Starting comprehensive model optimization...")
         
@@ -496,7 +496,7 @@ class ArchitectureOptimizer:
         
         return optimized_model, results
     
-    def apply_quantization(self, model: nn.Module) -> nn.Module:
+    def apply_quantization(self, model: object) -> object:
         """Apply model quantization"""
         if self.config.quantization_method == 'dynamic':
             # Dynamic quantization - easiest to apply
@@ -516,7 +516,7 @@ class ArchitectureOptimizer:
         else:
             return model
     
-    def apply_static_quantization(self, model: nn.Module) -> nn.Module:
+    def apply_static_quantization(self, model: object) -> object:
         """Apply static quantization with calibration"""
         try:
             # Prepare model for quantization
@@ -531,7 +531,7 @@ class ArchitectureOptimizer:
             # Calibration (simplified - would use real calibration data)
             logger.info("📊 Calibrating quantization...")
             for _ in range(self.config.calibration_samples):
-                dummy_input = torch.randn(1, 1000)  # Simplified
+                dummy_input = Tensor.randn(1, 1000)  # Simplified
                 prepared_model(dummy_input)
             
             # Convert to quantized model
@@ -546,7 +546,7 @@ class ArchitectureOptimizer:
                 model, {nn.Linear}, dtype=torch.qint8
             )
     
-    def apply_qat(self, model: nn.Module) -> nn.Module:
+    def apply_qat(self, model: object) -> object:
         """Apply quantization-aware training"""
         try:
             # Prepare for QAT
@@ -562,8 +562,8 @@ class ArchitectureOptimizer:
             for epoch in range(3):  # Limited for demo
                 for batch in range(10):  # Limited batches
                     optimizer.zero_grad()
-                    dummy_input = torch.randn(2, 1000)
-                    dummy_target = torch.randn(2, 900)
+                    dummy_input = Tensor.randn(2, 1000)
+                    dummy_target = Tensor.randn(2, 900)
                     
                     output = prepared_model(dummy_input)
                     if isinstance(output, dict):
@@ -586,7 +586,7 @@ class ArchitectureOptimizer:
                 model, {nn.Linear}, dtype=torch.qint8
             )
     
-    def apply_memory_optimizations(self, model: nn.Module) -> nn.Module:
+    def apply_memory_optimizations(self, model: object) -> object:
         """Apply memory optimization techniques"""
         optimizations = []
         
@@ -614,8 +614,8 @@ class ArchitectureOptimizer:
         # Create synthetic training data
         dataset = []
         for _ in range(100):
-            inputs = torch.randn(1000)  # Consciousness input
-            targets = torch.randn(900)  # ARC target
+            inputs = Tensor.randn(1000)  # Consciousness input
+            targets = Tensor.randn(900)  # ARC target
             dataset.append((inputs, targets))
         
         # Simple dataloader simulation
@@ -626,8 +626,8 @@ class ArchitectureOptimizer:
             
             def __iter__(self):
                 for i in range(0, len(self.data), self.batch_size):
-                    batch_inputs = torch.stack([self.data[j][0] for j in range(i, min(i + self.batch_size, len(self.data)))])
-                    batch_targets = torch.stack([self.data[j][1] for j in range(i, min(i + self.batch_size, len(self.data)))])
+                    batch_inputs = Tensor.stack([self.data[j][0] for j in range(i, min(i + self.batch_size, len(self.data)))])
+                    batch_targets = Tensor.stack([self.data[j][1] for j in range(i, min(i + self.batch_size, len(self.data)))])
                     yield batch_inputs, batch_targets
             
             def __len__(self):
@@ -635,7 +635,7 @@ class ArchitectureOptimizer:
         
         return SimpleDataLoader(dataset)
     
-    def measure_model_performance(self, model: nn.Module) -> Dict[str, float]:
+    def measure_model_performance(self, model: object) -> Dict[str, float]:
         """Measure model performance metrics"""
         model.eval()
         
@@ -643,7 +643,7 @@ class ArchitectureOptimizer:
         model_size_mb = sum(p.numel() * 4 for p in model.parameters()) / (1024 * 1024)  # Assume float32
         
         # Inference latency
-        dummy_input = torch.randn(1, getattr(model, 'config', type('', (), {'total_consciousness_dim': 1000})).total_consciousness_dim if hasattr(model, 'config') else 1000)
+        dummy_input = Tensor.randn(1, getattr(model, 'config', type('', (), {'total_consciousness_dim': 1000})).total_consciousness_dim if hasattr(model, 'config') else 1000)
         
         # Warmup
         for _ in range(10):
@@ -722,7 +722,7 @@ class ArchitectureOptimizer:
             deployment_ready=deployment_ready
         )
     
-    def export_to_onnx(self, model: nn.Module) -> Optional[str]:
+    def export_to_onnx(self, model: object) -> Optional[str]:
         """Export model to ONNX format"""
         try:
             logger.info("📦 Exporting model to ONNX...")
@@ -732,7 +732,7 @@ class ArchitectureOptimizer:
             
             # Create dummy input
             input_dim = getattr(model, 'config', type('', (), {'total_consciousness_dim': 1000})).total_consciousness_dim if hasattr(model, 'config') else 1000
-            dummy_input = torch.randn(1, input_dim)
+            dummy_input = Tensor.randn(1, input_dim)
             
             # Export path
             output_dir = Path("optimized_models")
@@ -876,7 +876,7 @@ if __name__ == "__main__":
     logger.info("🧪 Testing Architecture Optimizer...")
     
     # Create mock model for testing
-    class MockConsciousnessModel(nn.Module):
+    class MockConsciousnessModel(object):
         def __init__(self):
             super().__init__()
             from consciousness_processor import ProductionConsciousnessConfig

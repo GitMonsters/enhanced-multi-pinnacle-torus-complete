@@ -2,7 +2,7 @@
 # =========================================================
 
 # Core dependencies
-torch>=2.0.0
+tinygrad
 numpy>=1.24.0
 pandas>=2.0.0
 scipy>=1.10.0
@@ -57,7 +57,5 @@ bokeh>=3.2.0
 dash>=2.11.0
 
 # GPU Acceleration (optional)
-# Uncomment if using CUDA
-# torch[cuda]>=2.0.0
-# torchvision>=0.15.0
-# torchaudio>=2.0.0
+# TinyGrad automatically detects and uses available GPU
+# No additional packages needed for GPU acceleration

@@ -14,7 +14,7 @@ Features:
 - Real-world performance benchmarking
 """
 
-import torch
+from tinygrad.tensor import Tensor
 import numpy as np
 import json
 import logging
@@ -847,7 +847,7 @@ class RealWorldARCValidator:
                 if 'universal_thought' in processor_results:
                     ut_results = processor_results['universal_thought']
                     if 'creative_potential' in ut_results:
-                        if isinstance(ut_results['creative_potential'], torch.Tensor):
+                        if isinstance(ut_results['creative_potential'], Tensor):
                             metrics['creative_potential'] = float(ut_results['creative_potential'].mean())
                         else:
                             metrics['creative_potential'] = float(ut_results['creative_potential'])
@@ -1229,7 +1229,7 @@ class RealWorldARCValidator:
             f"**Competition Score**: {results.competition_score:.2%}",
             f"**Estimated Ranking**: #{results.ranking_estimate}",
             ""
-        ]
+        ])
         
         if results.competition_score >= 0.5:
             report_lines.append("🥇 **EXCELLENT** - Top-tier competitive performance!")
@@ -1273,7 +1273,7 @@ if __name__ == "__main__":
         def __call__(self, inputs, return_detailed_analysis=False):
             batch_size = inputs.shape[0]
             return {
-                'arc_solution': torch.randn(batch_size, 900),
+                'arc_solution': Tensor.randn(batch_size, 900),
                 'success': True,
                 'processor_results': {
                     'universal_consciousness': {'consciousness_state': torch.tensor(0.75)},

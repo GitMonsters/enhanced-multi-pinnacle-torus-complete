@@ -17,15 +17,17 @@ Features:
 - Wisdom-based reasoning
 """
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+
+# Import TinyGrad compatibility layer
+from ..tinygrad_compatibility import Sequential, MultiheadAttention, LSTM, GRU, Sigmoid, Tanh, ReLU, Dropout
 from typing import Dict, List, Tuple, Optional, Any
 import logging
 
 logger = logging.getLogger(__name__)
 
-class ThreePrinciplesFramework(nn.Module):
+class ThreePrinciplesFramework(object):
     """
     Three Principles Framework implementation
     
@@ -106,7 +108,7 @@ class ThreePrinciplesFramework(nn.Module):
             input_dim, hidden_dim // 2, batch_first=True
         )
     
-    def forward(self, inputs: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, inputs: Tensor) -> Dict[str, Tensor]:
         """
         Forward pass through Three Principles Framework
         
@@ -130,7 +132,7 @@ class ThreePrinciplesFramework(nn.Module):
         thought_output = self.thought_processor(thought_input)
         
         # Integrate the three principles
-        combined_principles = torch.cat([
+        combined_principles = Tensor.cat([
             mind_output, consciousness_output, thought_output
         ], dim=-1)
         
@@ -151,7 +153,7 @@ class ThreePrinciplesFramework(nn.Module):
         )
         
         # Calculate creative potential (based on thought activation)
-        creative_potential = torch.mean(torch.abs(thought_output), dim=-1, keepdim=True)
+        creative_potential = Tensor.mean(torch.abs(thought_output), dim=-1, keepdim=True)
         
         return {
             'mind_state': mind_output,
@@ -165,9 +167,9 @@ class ThreePrinciplesFramework(nn.Module):
             'creative_potential': creative_potential
         }
     
-    def _calculate_principle_coherence(self, mind: torch.Tensor, 
-                                     consciousness: torch.Tensor,
-                                     thought: torch.Tensor) -> torch.Tensor:
+    def _calculate_principle_coherence(self, mind: Tensor, 
+                                     consciousness: Tensor,
+                                     thought: Tensor) -> Tensor:
         """Calculate coherence between the three principles"""
         
         # Calculate pairwise correlations
@@ -194,7 +196,7 @@ class PrincipleAnalyzer:
     """Analyzer for Three Principles outputs"""
     
     @staticmethod
-    def analyze_psychological_state(results: Dict[str, torch.Tensor]) -> Dict[str, float]:
+    def analyze_psychological_state(results: Dict[str, Tensor]) -> Dict[str, float]:
         """Analyze the psychological state from Three Principles output"""
         
         analysis = {}
@@ -206,7 +208,7 @@ class PrincipleAnalyzer:
         
         # Consciousness aliveness (activation level)
         if 'consciousness_state' in results:
-            consciousness_activation = torch.mean(torch.abs(results['consciousness_state'])).item()
+            consciousness_activation = Tensor.mean(torch.abs(results['consciousness_state'])).item()
             analysis['consciousness_aliveness'] = min(consciousness_activation, 1.0)
         
         # Thought creativity (diversity of patterns)
@@ -223,7 +225,7 @@ class PrincipleAnalyzer:
         
         # Wisdom level (reality connection strength)
         if 'reality_connection' in results:
-            wisdom_level = torch.mean(results['reality_connection']).item()
+            wisdom_level = Tensor.mean(results['reality_connection']).item()
             analysis['wisdom_level'] = wisdom_level
         
         return analysis
@@ -239,7 +241,7 @@ if __name__ == "__main__":
     logger.info("Testing Three Principles Framework...")
     
     framework = ThreePrinciplesFramework(input_dim=192, hidden_dim=512)
-    test_input = torch.randn(4, 192)
+    test_input = Tensor.randn(4, 192)
     
     results = framework(test_input)
     

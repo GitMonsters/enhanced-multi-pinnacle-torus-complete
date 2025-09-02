@@ -18,9 +18,11 @@ Date: September 2, 2025
 Version: 1.0 - Complete Production System
 """
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+
+# Import TinyGrad compatibility layer
+from .tinygrad_compatibility import Sequential, MultiheadAttention, LSTM, GRU, Sigmoid, Tanh, ReLU, Dropout, GELU, BaseModel
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Any, Union
 import logging
@@ -124,7 +126,7 @@ class SystemPerformanceMetrics:
     confidence: float = 0.0
     stability_score: float = 0.0
 
-class EnhancedMultiPinnacleSystem(nn.Module):
+class EnhancedMultiPinnacleSystem(BaseModel):
     """
     Enhanced Multi-PINNACLE Consciousness System
     ============================================
@@ -161,14 +163,18 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             self._initialize_fallback_systems()
         
         # Production monitoring
-        self.register_buffer('processing_count', torch.tensor(0, dtype=torch.long))
-        self.register_buffer('error_count', torch.tensor(0, dtype=torch.long))
-        self.register_buffer('last_performance_check', torch.tensor(time.time()))
+        self.register_buffer('processing_count', Tensor([0]))
+        self.register_buffer('error_count', Tensor([0]))
+        self.register_buffer('last_performance_check', Tensor([time.time()]))
         
         # Memory management
         self._setup_memory_management()
         
         logger.info(f"🧠 Enhanced Multi-PINNACLE System initialized with {self.config.total_consciousness_dim} consciousness dimensions")
+    
+    def __call__(self, problem_input: Tensor, return_detailed_analysis: bool = False) -> Dict[str, Any]:
+        """Make the system callable"""
+        return self.forward(problem_input, return_detailed_analysis)
     
     def _initialize_consciousness_frameworks(self):
         """Initialize all consciousness frameworks"""
@@ -258,7 +264,7 @@ class EnhancedMultiPinnacleSystem(nn.Module):
         
         logger.info("✅ Production infrastructure initialized")
     
-    def _create_universal_mind(self) -> nn.Module:
+    def _create_universal_mind(self) -> object:
         """Create Universal Mind Generator"""
         return nn.Sequential(
             nn.Linear(self.config.universal_mind_dim, self.config.hidden_dim),
@@ -269,9 +275,9 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             nn.LayerNorm(self.config.base_dim)
         )
     
-    def _create_three_principles(self) -> nn.Module:
+    def _create_three_principles(self) -> object:
         """Create Three Principles Framework (Mind, Consciousness, Thought)"""
-        return nn.ModuleDict({
+        return dict({
             'mind': nn.Sequential(
                 nn.Linear(self.config.three_principles_dim // 3, self.config.base_dim // 3),
                 nn.LayerNorm(self.config.base_dim // 3),
@@ -290,7 +296,7 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             'integration': nn.Linear(self.config.base_dim, self.config.base_dim)
         })
     
-    def _create_deschooling_society(self) -> nn.Module:
+    def _create_deschooling_society(self) -> object:
         """Create Deschooling Society Integration"""
         return nn.Sequential(
             nn.Linear(self.config.deschooling_society_dim, self.config.hidden_dim),
@@ -301,9 +307,9 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             nn.Tanh()  # Creativity activation
         )
     
-    def _create_transcendent_states(self) -> nn.Module:
+    def _create_transcendent_states(self) -> object:
         """Create Transcendent States Processor"""
-        return nn.ModuleDict({
+        return dict({
             'akashic_memory': nn.Linear(self.config.transcendent_states_dim // 5, self.config.base_dim // 5),
             'omniscience': nn.Linear(self.config.transcendent_states_dim // 5, self.config.base_dim // 5),
             'prescience': nn.Linear(self.config.transcendent_states_dim // 5, self.config.base_dim // 5),
@@ -316,15 +322,15 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             )
         })
     
-    def _create_hrm_cycles(self) -> nn.Module:
+    def _create_hrm_cycles(self) -> object:
         """Create HRM Cycles Manager"""
-        return nn.ModuleDict({
+        return dict({
             'h_cycle': nn.GRU(self.config.hrm_cycles_dim, self.config.base_dim // 2, batch_first=True),
             'l_cycle': nn.GRU(self.config.hrm_cycles_dim, self.config.base_dim // 2, batch_first=True),
             'cycle_integration': nn.Linear(self.config.base_dim, self.config.base_dim)
         })
     
-    def _create_consequential_thinking(self) -> nn.Module:
+    def _create_consequential_thinking(self) -> object:
         """Create Consequential Thinking Engine"""
         return nn.Sequential(
             nn.Linear(self.config.consequential_thinking_dim, self.config.hidden_dim),
@@ -335,9 +341,9 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             nn.LayerNorm(self.config.base_dim)
         )
     
-    def _create_creative_states(self) -> nn.Module:
+    def _create_creative_states(self) -> object:
         """Create Creative States Processor (Dreams/Visions/OBE)"""
-        return nn.ModuleDict({
+        return dict({
             'dreams': nn.Linear(self.config.creative_states_dim // 3, self.config.base_dim // 3),
             'visions': nn.Linear(self.config.creative_states_dim // 3, self.config.base_dim // 3),
             'obe_states': nn.Linear(self.config.creative_states_dim // 3, self.config.base_dim // 3),
@@ -348,7 +354,7 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             )
         })
     
-    def _create_adaptive_reasoning(self) -> nn.Module:
+    def _create_adaptive_reasoning(self) -> object:
         """Create Adaptive Reasoning Pathways"""
         return nn.Sequential(
             nn.Linear(self.config.adaptive_reasoning_dim, self.config.hidden_dim // 2),
@@ -357,7 +363,7 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             nn.Linear(self.config.hidden_dim // 2, self.config.base_dim)
         )
     
-    def _create_consciousness_merger(self) -> nn.Module:
+    def _create_consciousness_merger(self) -> object:
         """Create Consciousness Merger"""
         total_consciousness_dim = (self.config.base_dim * 8)  # All consciousness outputs
         
@@ -370,15 +376,15 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             nn.LayerNorm(self.config.base_dim)
         )
     
-    def _create_state_manager(self) -> nn.Module:
+    def _create_state_manager(self) -> object:
         """Create State Manager"""
-        return nn.ModuleDict({
+        return dict({
             'state_encoder': nn.Linear(self.config.base_dim, self.config.base_dim),
             'state_decoder': nn.Linear(self.config.base_dim, self.config.base_dim),
             'state_memory': nn.GRU(self.config.base_dim, self.config.base_dim, batch_first=True)
         })
     
-    def _create_master_integrator(self) -> nn.Module:
+    def _create_master_integrator(self) -> object:
         """Create Master Integrator"""
         return nn.Sequential(
             nn.Linear(self.config.base_dim, self.config.hidden_dim),
@@ -390,6 +396,24 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             nn.GELU(),
             nn.Linear(self.config.hidden_dim // 2, self.config.base_dim)
         )
+    
+    def _create_torus_topology(self) -> object:
+        """Create Advanced Torus Topology"""
+        try:
+            from .advanced_torus_topology import AdvancedTorusTopology, AdvancedTorusConfig
+            
+            torus_config = AdvancedTorusConfig(
+                major_radius=8,
+                minor_radius=4,
+                base_dim=self.config.base_dim,
+                hidden_dim=self.config.hidden_dim
+            )
+            
+            return AdvancedTorusTopology(torus_config)
+        except Exception as e:
+            logger.warning(f"Failed to create torus topology: {e}, using fallback")
+            # Fallback to simple linear transformation
+            return nn.Linear(self.config.base_dim, self.config.base_dim)
     
     def _initialize_fallback_systems(self):
         """Initialize fallback systems if main initialization fails"""
@@ -446,14 +470,14 @@ class EnhancedMultiPinnacleSystem(nn.Module):
         self.gradient_accumulation_steps = 4
         self.memory_cleanup_interval = self.config.memory_cleanup_interval
     
-    def _validate_input(self, problem_input: torch.Tensor) -> torch.Tensor:
+    def _validate_input(self, problem_input: Tensor) -> Tensor:
         """Production input validation with error handling"""
         try:
             # Check basic tensor properties
-            if not isinstance(problem_input, torch.Tensor):
-                raise TypeError(f"Expected torch.Tensor, got {type(problem_input)}")
+            if not isinstance(problem_input, Tensor):
+                raise TypeError(f"Expected Tensor, got {type(problem_input)}")
             
-            if problem_input.dim() < 2:
+            if problem_input.ndim < 2:
                 problem_input = problem_input.unsqueeze(0)
             
             batch_size = problem_input.shape[0]
@@ -484,9 +508,9 @@ class EnhancedMultiPinnacleSystem(nn.Module):
         except Exception as e:
             logger.error(f"❌ Input validation failed: {e}")
             # Return safe fallback
-            return torch.zeros(1, self.config.total_consciousness_dim)
+            return Tensor.zeros(1, self.config.total_consciousness_dim)
     
-    def _extract_framework_inputs(self, problem_input: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def _extract_framework_inputs(self, problem_input: Tensor) -> Dict[str, Tensor]:
         """Extract inputs for each consciousness framework"""
         try:
             batch_size = problem_input.shape[0]
@@ -534,12 +558,12 @@ class EnhancedMultiPinnacleSystem(nn.Module):
         except Exception as e:
             logger.error(f"❌ Input extraction failed: {e}")
             # Return safe fallbacks
-            return {key: torch.zeros(batch_size, getattr(self.config, f"{key}_dim", self.config.base_dim))
+            return {key: Tensor.zeros(batch_size, getattr(self.config, f"{key}_dim", self.config.base_dim))
                     for key in ['universal_mind', 'three_principles', 'deschooling_society',
                                'transcendent_states', 'hrm_cycles', 'consequential_thinking',
                                'creative_states', 'adaptive_reasoning']}
     
-    def forward(self, problem_input: torch.Tensor, 
+    def forward(self, problem_input: Tensor, 
                 return_detailed_analysis: bool = False) -> Dict[str, Any]:
         """Enhanced Multi-PINNACLE forward pass"""
         start_time = time.time()
@@ -662,10 +686,10 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             
             # Return safe fallback
             return {
-                'arc_solution': torch.zeros(1, 900),
-                'master_consciousness': torch.zeros(1, self.config.base_dim),
-                'confidence': torch.tensor([[0.5]]),
-                'consciousness_coherence': torch.tensor([[0.0]]),
+                'arc_solution': Tensor.zeros(1, 900),
+                'master_consciousness': Tensor.zeros(1, self.config.base_dim),
+                'confidence': Tensor([[0.5]]),
+                'consciousness_coherence': Tensor([[0.0]]),
                 'processing_time': time.time() - start_time,
                 'batch_size': 1,
                 'success': False,
@@ -673,18 +697,18 @@ class EnhancedMultiPinnacleSystem(nn.Module):
                 'consciousness_metrics': {'error': True}
             }
     
-    def _process_universal_mind(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_universal_mind(self, inputs: Tensor) -> Tensor:
         """Process through Universal Mind Generator"""
         try:
             return self.universal_mind(inputs)
         except Exception as e:
             logger.warning(f"Universal Mind processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_three_principles(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_three_principles(self, inputs: Tensor) -> Tensor:
         """Process through Three Principles Framework"""
         try:
-            if isinstance(self.three_principles, nn.ModuleDict):
+            if isinstance(self.three_principles, dict):
                 # Split input into Mind, Consciousness, Thought
                 split_size = self.config.three_principles_dim // 3
                 mind_input = inputs[:, :split_size]
@@ -695,26 +719,26 @@ class EnhancedMultiPinnacleSystem(nn.Module):
                 consciousness_output = self.three_principles['consciousness'](consciousness_input)
                 thought_output = self.three_principles['thought'](thought_input)
                 
-                combined = torch.cat([mind_output, consciousness_output, thought_output], dim=-1)
+                combined = Tensor.cat([mind_output, consciousness_output, thought_output], dim=-1)
                 return self.three_principles['integration'](combined)
             else:
                 return self.three_principles(inputs)
         except Exception as e:
             logger.warning(f"Three Principles processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_deschooling_society(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_deschooling_society(self, inputs: Tensor) -> Tensor:
         """Process through Deschooling Society Integration"""
         try:
             return self.deschooling_society(inputs)
         except Exception as e:
             logger.warning(f"Deschooling Society processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_transcendent_states(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_transcendent_states(self, inputs: Tensor) -> Tensor:
         """Process through Transcendent States Processor"""
         try:
-            if isinstance(self.transcendent_states, nn.ModuleDict):
+            if isinstance(self.transcendent_states, dict):
                 # Split input into 5 transcendent states
                 split_size = self.config.transcendent_states_dim // 5
                 
@@ -734,7 +758,7 @@ class EnhancedMultiPinnacleSystem(nn.Module):
                     inputs[:, 4*split_size:]
                 )
                 
-                combined = torch.cat([
+                combined = Tensor.cat([
                     akashic_output, omniscience_output, prescience_output,
                     meta_mind_output, unity_output
                 ], dim=-1)
@@ -744,38 +768,38 @@ class EnhancedMultiPinnacleSystem(nn.Module):
                 return self.transcendent_states(inputs)
         except Exception as e:
             logger.warning(f"Transcendent States processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_hrm_cycles(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_hrm_cycles(self, inputs: Tensor) -> Tensor:
         """Process through HRM Cycles Manager"""
         try:
-            if isinstance(self.hrm_cycles, nn.ModuleDict):
+            if isinstance(self.hrm_cycles, dict):
                 # Process through H-cycle and L-cycle
                 inputs_seq = inputs.unsqueeze(1)  # Add sequence dimension
                 
                 h_output, _ = self.hrm_cycles['h_cycle'](inputs_seq)
                 l_output, _ = self.hrm_cycles['l_cycle'](inputs_seq)
                 
-                combined = torch.cat([h_output.squeeze(1), l_output.squeeze(1)], dim=-1)
+                combined = Tensor.cat([h_output.squeeze(1), l_output.squeeze(1)], dim=-1)
                 return self.hrm_cycles['cycle_integration'](combined)
             else:
                 return self.hrm_cycles(inputs)
         except Exception as e:
             logger.warning(f"HRM Cycles processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_consequential_thinking(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_consequential_thinking(self, inputs: Tensor) -> Tensor:
         """Process through Consequential Thinking Engine"""
         try:
             return self.consequential_thinking(inputs)
         except Exception as e:
             logger.warning(f"Consequential Thinking processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_creative_states(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_creative_states(self, inputs: Tensor) -> Tensor:
         """Process through Creative States Processor"""
         try:
-            if isinstance(self.creative_states, nn.ModuleDict):
+            if isinstance(self.creative_states, dict):
                 # Split input into Dreams, Visions, OBE states
                 split_size = self.config.creative_states_dim // 3
                 
@@ -783,28 +807,28 @@ class EnhancedMultiPinnacleSystem(nn.Module):
                 visions_output = self.creative_states['visions'](inputs[:, split_size:2*split_size])
                 obe_output = self.creative_states['obe_states'](inputs[:, 2*split_size:])
                 
-                combined = torch.cat([dreams_output, visions_output, obe_output], dim=-1)
+                combined = Tensor.cat([dreams_output, visions_output, obe_output], dim=-1)
                 return self.creative_states['creative_integration'](combined)
             else:
                 return self.creative_states(inputs)
         except Exception as e:
             logger.warning(f"Creative States processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_adaptive_reasoning(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_adaptive_reasoning(self, inputs: Tensor) -> Tensor:
         """Process through Adaptive Reasoning Pathways"""
         try:
             return self.adaptive_reasoning(inputs)
         except Exception as e:
             logger.warning(f"Adaptive Reasoning processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_torus_topology(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_torus_topology(self, inputs: Tensor) -> Tensor:
         """Process through Advanced Torus Topology with vortex dynamics"""
         try:
             # Reshape for torus topology processing
             batch_size, seq_len = inputs.shape[:2]
-            if inputs.dim() == 2:
+            if inputs.ndim == 2:
                 # Add node dimension for torus processing
                 inputs = inputs.unsqueeze(1)
                 seq_len = 1
@@ -826,9 +850,9 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             if hasattr(self.torus_topology, '__call__'):
                 return self.torus_topology(inputs)
             else:
-                return torch.zeros(inputs.shape[0], self.config.base_dim)
+                return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_torus_attention(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_torus_attention(self, inputs: Tensor) -> Tensor:
         """Process through Torus Attention Mechanism with superior sequential modeling"""
         try:
             # Reshape for attention processing
@@ -858,24 +882,24 @@ class EnhancedMultiPinnacleSystem(nn.Module):
                 
         except Exception as e:
             logger.warning(f"Torus Attention processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _merge_consciousness(self, framework_outputs: Dict[str, torch.Tensor]) -> torch.Tensor:
+    def _merge_consciousness(self, framework_outputs: Dict[str, Tensor]) -> Tensor:
         """Merge all consciousness framework outputs"""
         try:
             # Concatenate all framework outputs
             outputs_list = [framework_outputs[key] for key in sorted(framework_outputs.keys())]
-            merged = torch.cat(outputs_list, dim=-1)
+            merged = Tensor.cat(outputs_list, dim=-1)
             return self.consciousness_merger(merged)
         except Exception as e:
             logger.warning(f"Consciousness merger error: {e}")
             batch_size = next(iter(framework_outputs.values())).shape[0]
-            return torch.zeros(batch_size, self.config.base_dim)
+            return Tensor.zeros(batch_size, self.config.base_dim)
     
-    def _manage_state(self, merged_consciousness: torch.Tensor) -> torch.Tensor:
+    def _manage_state(self, merged_consciousness: Tensor) -> Tensor:
         """Manage consciousness state"""
         try:
-            if isinstance(self.state_manager, nn.ModuleDict):
+            if isinstance(self.state_manager, dict):
                 encoded_state = self.state_manager['state_encoder'](merged_consciousness)
                 state_seq = encoded_state.unsqueeze(1)
                 memory_output, _ = self.state_manager['state_memory'](state_seq)
@@ -887,7 +911,7 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             logger.warning(f"State management error: {e}")
             return merged_consciousness
     
-    def _calculate_consciousness_metrics(self, framework_outputs: Dict[str, torch.Tensor]) -> Dict[str, float]:
+    def _calculate_consciousness_metrics(self, framework_outputs: Dict[str, Tensor]) -> Dict[str, float]:
         """Calculate consciousness-specific metrics"""
         try:
             metrics = {}
@@ -896,25 +920,25 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             coherence_values = []
             for output in framework_outputs.values():
                 if output.numel() > 0:
-                    coherence_values.append(torch.std(output).item())
+                    coherence_values.append(Tensor.std(output).item())
             
             if coherence_values:
                 metrics['consciousness_coherence'] = 1.0 / (1.0 + np.mean(coherence_values))
             
             # Calculate reasoning depth (based on activation magnitudes)
-            reasoning_outputs = framework_outputs.get('consequential_thinking', torch.tensor([0.0]))
+            reasoning_outputs = framework_outputs.get('consequential_thinking', Tensor([0.0]))
             if reasoning_outputs.numel() > 0:
-                metrics['reasoning_depth'] = torch.mean(torch.abs(reasoning_outputs)).item()
+                metrics['reasoning_depth'] = Tensor.mean(torch.abs(reasoning_outputs)).item()
             
             # Calculate creative potential (based on creative states activation)
-            creative_outputs = framework_outputs.get('creative_states', torch.tensor([0.0]))
+            creative_outputs = framework_outputs.get('creative_states', Tensor([0.0]))
             if creative_outputs.numel() > 0:
-                metrics['creative_potential'] = torch.mean(torch.abs(creative_outputs)).item()
+                metrics['creative_potential'] = Tensor.mean(torch.abs(creative_outputs)).item()
             
             # Calculate transcendence level
-            transcendent_outputs = framework_outputs.get('transcendent_states', torch.tensor([0.0]))
+            transcendent_outputs = framework_outputs.get('transcendent_states', Tensor([0.0]))
             if transcendent_outputs.numel() > 0:
-                metrics['transcendence_level'] = torch.mean(torch.abs(transcendent_outputs)).item()
+                metrics['transcendence_level'] = Tensor.mean(torch.abs(transcendent_outputs)).item()
             
             return metrics
             
@@ -999,7 +1023,7 @@ class EnhancedMultiPinnacleSystem(nn.Module):
                 'error': str(e)
             }
     
-    def _convert_arc_to_tensor(self, problem_data: Dict[str, Any]) -> torch.Tensor:
+    def _convert_arc_to_tensor(self, problem_data: Dict[str, Any]) -> Tensor:
         """Convert ARC problem to tensor input"""
         # Simplified conversion - in practice this would be more sophisticated
         try:
@@ -1031,13 +1055,13 @@ class EnhancedMultiPinnacleSystem(nn.Module):
                 feature_vector.append(0.0)
             feature_vector = feature_vector[:expected_dim]
             
-            return torch.tensor(feature_vector, dtype=torch.float32).unsqueeze(0)
+            return Tensor(feature_vector).unsqueeze(0)
             
         except Exception as e:
             logger.error(f"ARC to tensor conversion failed: {e}")
-            return torch.zeros(1, self.config.total_consciousness_dim)
+            return Tensor.zeros(1, self.config.total_consciousness_dim)
     
-    def _convert_tensor_to_arc(self, solution_tensor: torch.Tensor) -> List[List[int]]:
+    def _convert_tensor_to_arc(self, solution_tensor: Tensor) -> List[List[int]]:
         """Convert tensor output to ARC grid format"""
         try:
             # Reshape to 30x30 grid and convert to integers
@@ -1110,8 +1134,8 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             checkpoint = torch.load(filepath, map_location='cpu')
             
             self.load_state_dict(checkpoint['model_state_dict'])
-            self.processing_count = torch.tensor(checkpoint.get('processing_count', 0))
-            self.error_count = torch.tensor(checkpoint.get('error_count', 0))
+            self.processing_count = Tensor([checkpoint.get('processing_count', 0)])
+            self.error_count = Tensor([checkpoint.get('error_count', 0)])
             self.start_time = checkpoint.get('start_time', time.time())
             
             logger.info(f"📥 Enhanced Multi-PINNACLE checkpoint loaded from {filepath}")
@@ -1141,7 +1165,7 @@ if __name__ == "__main__":
     system = create_enhanced_system()
     
     # Test with sample input
-    test_input = torch.randn(2, system.config.total_consciousness_dim)
+    test_input = Tensor.randn(2, system.config.total_consciousness_dim)
     
     results = system(test_input, return_detailed_analysis=True)
     

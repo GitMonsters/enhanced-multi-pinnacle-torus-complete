@@ -14,9 +14,11 @@ Implements true torus topology with:
 Part of the Enhanced Multi-PINNACLE Consciousness System
 """
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+
+# Import TinyGrad compatibility layer
+from .tinygrad_compatibility import Sequential, MultiheadAttention, LSTM, GRU, Sigmoid, Tanh, ReLU, Dropout
 import numpy as np
 import math
 from typing import Dict, List, Tuple, Optional, Union
@@ -49,7 +51,7 @@ class TorusCoordinateSystem:
         self.coordinates = self._generate_torus_coordinates()
         self.major_loops, self.minor_loops = self._identify_fundamental_loops()
         
-    def _generate_torus_coordinates(self) -> torch.Tensor:
+    def _generate_torus_coordinates(self) -> Tensor:
         """Generate 3D coordinates for torus surface"""
         coords = []
         
@@ -93,7 +95,7 @@ class TorusCoordinateSystem:
         return major_loops, minor_loops
 
 
-class VortexFlowDynamics(nn.Module):
+class VortexFlowDynamics(object):
     """Implements vortexing code properties with spiral information flow"""
     
     def __init__(self, config: AdvancedTorusConfig, hidden_dim: int = 256):
@@ -103,7 +105,7 @@ class VortexFlowDynamics(nn.Module):
         self.total_nodes = config.total_nodes
         
         # Spiral flow parameters
-        self.spiral_weights = nn.Parameter(torch.randn(self.total_nodes, self.total_nodes) * 0.1)
+        self.spiral_weights = nn.Parameter(Tensor.randn(self.total_nodes, self.total_nodes) * 0.1)
         
         # Poloidal (short way) flow
         self.poloidal_flow = nn.Sequential(
@@ -133,15 +135,15 @@ class VortexFlowDynamics(nn.Module):
             nn.Tanh()
         )
     
-    def create_spiral_adjacency(self, coordinates: torch.Tensor) -> torch.Tensor:
+    def create_spiral_adjacency(self, coordinates: Tensor) -> Tensor:
         """Create spiral connectivity matrix"""
-        adj = torch.zeros(self.total_nodes, self.total_nodes)
+        adj = Tensor.zeros(self.total_nodes, self.total_nodes)
         
         for i in range(self.total_nodes):
             for j in range(self.total_nodes):
                 if i != j:
                     # Calculate 3D distance
-                    dist = torch.norm(coordinates[i] - coordinates[j])
+                    dist = Tensor.norm(coordinates[i] - coordinates[j])
                     
                     # Spiral connectivity based on helical paths
                     spiral_factor = math.exp(-dist / self.config.spiral_pitch)
@@ -153,7 +155,7 @@ class VortexFlowDynamics(nn.Module):
         
         return adj
     
-    def forward(self, node_states: torch.Tensor, coordinates: torch.Tensor) -> Tuple[torch.Tensor, Dict]:
+    def forward(self, node_states: Tensor, coordinates: Tensor) -> Tuple[Tensor, Dict]:
         """Apply vortex dynamics to information flow"""
         batch_size, n_nodes, hidden_dim = node_states.shape
         
@@ -174,7 +176,7 @@ class VortexFlowDynamics(nn.Module):
         toroidal_flow = torch.bmm(spiral_adj_expanded, toroidal_states)
         
         # Energy conservation
-        combined_flow = torch.cat([poloidal_flow, toroidal_flow], dim=-1)
+        combined_flow = Tensor.cat([poloidal_flow, toroidal_flow], dim=-1)
         conserved_energy = self.energy_conservator(combined_flow)
         
         # Apply energy conservation rate
@@ -190,17 +192,17 @@ class VortexFlowDynamics(nn.Module):
         
         # Calculate vortex metrics
         vortex_metrics = {
-            'spiral_energy': torch.norm(spiral_adj).item(),
-            'poloidal_strength': torch.norm(poloidal_flow).item(),
-            'toroidal_strength': torch.norm(toroidal_flow).item(),
-            'energy_conservation': torch.mean(conserved_energy).item(),
-            'self_organization': torch.norm(self_organized).item()
+            'spiral_energy': Tensor.norm(spiral_adj).item(),
+            'poloidal_strength': Tensor.norm(poloidal_flow).item(),
+            'toroidal_strength': Tensor.norm(toroidal_flow).item(),
+            'energy_conservation': Tensor.mean(conserved_energy).item(),
+            'self_organization': Tensor.norm(self_organized).item()
         }
         
         return final_states, vortex_metrics
 
 
-class DualPathwayProcessor(nn.Module):
+class DualPathwayProcessor(object):
     """Implements dual-pathway processing using major/minor circles"""
     
     def __init__(self, config: AdvancedTorusConfig, hidden_dim: int = 256):
@@ -233,8 +235,8 @@ class DualPathwayProcessor(nn.Module):
             nn.LayerNorm(hidden_dim)
         )
     
-    def forward(self, node_states: torch.Tensor, major_loops: List[List[int]], 
-                minor_loops: List[List[int]]) -> Tuple[torch.Tensor, Dict]:
+    def forward(self, node_states: Tensor, major_loops: List[List[int]], 
+                minor_loops: List[List[int]]) -> Tuple[Tensor, Dict]:
         """Process information through dual pathways"""
         batch_size, n_nodes, hidden_dim = node_states.shape
         
@@ -242,7 +244,7 @@ class DualPathwayProcessor(nn.Module):
         major_processed = []
         for loop in major_loops:
             loop_states = node_states[:, loop, :]  # Extract loop nodes
-            loop_mean = torch.mean(loop_states, dim=1, keepdim=True)
+            loop_mean = Tensor.mean(loop_states, dim=1, keepdim=True)
             major_output = self.major_pathway(loop_mean)
             major_processed.append(major_output)
         
@@ -250,13 +252,13 @@ class DualPathwayProcessor(nn.Module):
         minor_processed = []
         for loop in minor_loops:
             loop_states = node_states[:, loop, :]
-            loop_mean = torch.mean(loop_states, dim=1, keepdim=True) 
+            loop_mean = Tensor.mean(loop_states, dim=1, keepdim=True) 
             minor_output = self.minor_pathway(loop_mean)
             minor_processed.append(minor_output)
         
         # Integrate pathways
-        major_integrated = torch.cat(major_processed, dim=1)
-        minor_integrated = torch.cat(minor_processed, dim=1)
+        major_integrated = Tensor.cat(major_processed, dim=1)
+        minor_integrated = Tensor.cat(minor_processed, dim=1)
         
         # Ensure same dimensions for integration
         if major_integrated.shape[1] != minor_integrated.shape[1]:
@@ -265,7 +267,7 @@ class DualPathwayProcessor(nn.Module):
             minor_integrated = minor_integrated[:, :min_dim, :]
         
         # Combine pathways
-        dual_pathway_input = torch.cat([major_integrated, minor_integrated], dim=-1)
+        dual_pathway_input = Tensor.cat([major_integrated, minor_integrated], dim=-1)
         integrated_output = self.pathway_integration(dual_pathway_input)
         
         # Distribute back to nodes with dual pathway weighting
@@ -280,15 +282,15 @@ class DualPathwayProcessor(nn.Module):
                                        (1 - weight) * node_states[:, i, :])
         
         pathway_metrics = {
-            'major_pathway_strength': torch.norm(major_integrated).item(),
-            'minor_pathway_strength': torch.norm(minor_integrated).item(),
-            'integration_efficiency': torch.norm(integrated_output).item()
+            'major_pathway_strength': Tensor.norm(major_integrated).item(),
+            'minor_pathway_strength': Tensor.norm(minor_integrated).item(),
+            'integration_efficiency': Tensor.norm(integrated_output).item()
         }
         
         return enhanced_states, pathway_metrics
 
 
-class AdvancedTorusTopology(nn.Module):
+class AdvancedTorusTopology(object):
     """Complete advanced torus topology with all topological advantages"""
     
     def __init__(self, config: AdvancedTorusConfig, hidden_dim: int = 256):
@@ -319,8 +321,8 @@ class AdvancedTorusTopology(nn.Module):
             nn.Tanh()
         )
     
-    def forward(self, node_states: torch.Tensor, 
-                temporal_sequence: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, Dict]:
+    def forward(self, node_states: Tensor, 
+                temporal_sequence: Optional[Tensor] = None) -> Tuple[Tensor, Dict]:
         """Forward pass through advanced torus topology"""
         
         # Apply vortex dynamics with spiral flow
@@ -341,7 +343,7 @@ class AdvancedTorusTopology(nn.Module):
             recurrent_out, _ = self.temporal_recurrence(temporal_sequence)
             
             # Integrate temporal information
-            temporal_mean = torch.mean(recurrent_out, dim=1, keepdim=True)
+            temporal_mean = Tensor.mean(recurrent_out, dim=1, keepdim=True)
             pathway_states = pathway_states + 0.3 * temporal_mean
         
         # Genus-1 topology processing
@@ -354,9 +356,9 @@ class AdvancedTorusTopology(nn.Module):
         all_metrics = {
             **vortex_metrics,
             **pathway_metrics,
-            'genus_topology_strength': torch.norm(genus_states).item(),
-            'total_information_flow': torch.norm(final_states).item(),
-            'topological_coherence': torch.mean(torch.cosine_similarity(
+            'genus_topology_strength': Tensor.norm(genus_states).item(),
+            'total_information_flow': Tensor.norm(final_states).item(),
+            'topological_coherence': Tensor.mean(torch.cosine_similarity(
                 final_states[0], node_states[0], dim=-1
             )).item()
         }
@@ -389,8 +391,8 @@ def test_advanced_torus():
     
     # Test input
     batch_size = 2
-    node_states = torch.randn(batch_size, config.total_nodes, 256)
-    temporal_sequence = torch.randn(batch_size, 10, 256)  # 10 time steps
+    node_states = Tensor.randn(batch_size, config.total_nodes, 256)
+    temporal_sequence = Tensor.randn(batch_size, 10, 256)  # 10 time steps
     
     print(f"\nInput shape: {node_states.shape}")
     

@@ -16,9 +16,11 @@ Advantages over hyperspherical architectures:
 Part of the Enhanced Multi-PINNACLE Consciousness System
 """
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+
+# Import TinyGrad compatibility layer
+from .tinygrad_compatibility import Sequential, MultiheadAttention, LSTM, GRU, Sigmoid, Tanh, ReLU, Dropout
 import math
 import numpy as np
 from typing import Optional, Tuple, Dict, List
@@ -40,7 +42,7 @@ class TorusAttentionConfig:
     gradient_flow_factor: float = 1.2
 
 
-class TorusPositionalEncoding(nn.Module):
+class TorusPositionalEncoding(object):
     """Positional encoding on torus surface instead of linear positions"""
     
     def __init__(self, d_model: int, config: TorusAttentionConfig, max_len: int = 8192):
@@ -55,7 +57,7 @@ class TorusPositionalEncoding(nn.Module):
         ))
         
         # Map sequence positions to torus coordinates
-        pe = torch.zeros(max_len, d_model)
+        pe = Tensor.zeros(max_len, d_model)
         
         for pos in range(max_len):
             # Map linear position to torus parameters
@@ -76,13 +78,13 @@ class TorusPositionalEncoding(nn.Module):
         
         self.register_buffer('pe', pe.unsqueeze(0))
     
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Add torus positional encoding"""
         seq_len = x.size(1)
         return x + self.pe[:, :seq_len]
 
 
-class VortexAttentionHead(nn.Module):
+class VortexAttentionHead(object):
     """Single attention head with vortex dynamics on torus"""
     
     def __init__(self, d_model: int, d_head: int, config: TorusAttentionConfig):
@@ -97,7 +99,7 @@ class VortexAttentionHead(nn.Module):
         self.v_proj = nn.Linear(d_model, d_head, bias=False)
         
         # Vortex dynamics parameters
-        self.vortex_weights = nn.Parameter(torch.randn(d_head, d_head) * 0.1)
+        self.vortex_weights = nn.Parameter(Tensor.randn(d_head, d_head) * 0.1)
         
         # Circulation flow processors
         self.poloidal_flow = nn.Linear(d_head, d_head, bias=False)
@@ -106,8 +108,8 @@ class VortexAttentionHead(nn.Module):
         # Memory retention mechanism
         self.memory_gate = nn.Linear(d_head * 2, d_head)
         
-    def apply_vortex_dynamics(self, attention_weights: torch.Tensor, 
-                             values: torch.Tensor) -> torch.Tensor:
+    def apply_vortex_dynamics(self, attention_weights: Tensor, 
+                             values: Tensor) -> Tensor:
         """Apply vortex dynamics to attention and values"""
         batch_size, seq_len, d_head = values.shape
         
@@ -145,14 +147,14 @@ class VortexAttentionHead(nn.Module):
         
         return vortex_attention, combined_values
     
-    def apply_memory_retention(self, current_output: torch.Tensor,
-                              prev_memory: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def apply_memory_retention(self, current_output: Tensor,
+                              prev_memory: Optional[Tensor] = None) -> Tensor:
         """Apply memory retention via circulation loops"""
         if prev_memory is None:
             return current_output
         
         # Combine current and previous memory
-        memory_input = torch.cat([current_output, prev_memory], dim=-1)
+        memory_input = Tensor.cat([current_output, prev_memory], dim=-1)
         memory_gate = torch.sigmoid(self.memory_gate(memory_input))
         
         # Apply retention rate
@@ -164,9 +166,9 @@ class VortexAttentionHead(nn.Module):
         
         return retained_output
     
-    def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor,
-                mask: Optional[torch.Tensor] = None,
-                prev_memory: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, query: Tensor, key: Tensor, value: Tensor,
+                mask: Optional[Tensor] = None,
+                prev_memory: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
         """Forward pass with vortex dynamics"""
         
         # Project to Q, K, V
@@ -196,7 +198,7 @@ class VortexAttentionHead(nn.Module):
         return output, vortex_attention
 
 
-class TorusMultiHeadAttention(nn.Module):
+class TorusMultiHeadAttention(object):
     """Multi-head attention with torus topology and vortex dynamics"""
     
     def __init__(self, config: TorusAttentionConfig):
@@ -209,7 +211,7 @@ class TorusMultiHeadAttention(nn.Module):
         assert config.d_model % config.n_heads == 0
         
         # Create attention heads with vortex dynamics
-        self.attention_heads = nn.ModuleList([
+        self.attention_heads = list([
             VortexAttentionHead(config.d_model, self.d_head, config)
             for _ in range(config.n_heads)
         ])
@@ -228,9 +230,9 @@ class TorusMultiHeadAttention(nn.Module):
         # Memory storage for circulation loops
         self.memory_storage = None
         
-    def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor,
-                mask: Optional[torch.Tensor] = None,
-                use_memory: bool = True) -> Tuple[torch.Tensor, Dict]:
+    def forward(self, query: Tensor, key: Tensor, value: Tensor,
+                mask: Optional[Tensor] = None,
+                use_memory: bool = True) -> Tuple[Tensor, Dict]:
         """Forward pass through torus multi-head attention"""
         
         batch_size, seq_len, d_model = query.shape
@@ -258,7 +260,7 @@ class TorusMultiHeadAttention(nn.Module):
                 self.memory_storage[f'head_{i}'] = head_out.detach()
         
         # Concatenate head outputs
-        concat_output = torch.cat(head_outputs, dim=-1)
+        concat_output = Tensor.cat(head_outputs, dim=-1)
         
         # Apply output projection
         output = self.output_proj(concat_output)
@@ -273,13 +275,13 @@ class TorusMultiHeadAttention(nn.Module):
         
         # Calculate torus-specific metrics
         metrics = {
-            'attention_entropy': torch.mean(torch.sum(
+            'attention_entropy': Tensor.mean(torch.sum(
                 -head_attentions[0] * torch.log(head_attentions[0] + 1e-9), dim=-1
             )).item(),
             'vortex_strength': self.config.vortex_strength,
             'memory_retention': len(self.memory_storage) if self.memory_storage else 0,
-            'gradient_flow': torch.norm(enhanced_output - output).item(),
-            'circulation_coherence': torch.mean(torch.cosine_similarity(
+            'gradient_flow': Tensor.norm(enhanced_output - output).item(),
+            'circulation_coherence': Tensor.mean(torch.cosine_similarity(
                 head_outputs[0].flatten(1), head_outputs[-1].flatten(1), dim=-1
             )).item() if len(head_outputs) > 1 else 1.0
         }
@@ -287,9 +289,9 @@ class TorusMultiHeadAttention(nn.Module):
         return final_output, metrics
 
 
-def apply_torus_attention(tokens: torch.Tensor, 
-                         attention_weights: Optional[torch.Tensor] = None,
-                         config: Optional[TorusAttentionConfig] = None) -> torch.Tensor:
+def apply_torus_attention(tokens: Tensor, 
+                         attention_weights: Optional[Tensor] = None,
+                         config: Optional[TorusAttentionConfig] = None) -> Tensor:
     """
     Apply torus attention mechanism with vortexing code properties
     
@@ -330,7 +332,7 @@ def apply_torus_attention(tokens: torch.Tensor,
     return output
 
 
-class TorusTransformerBlock(nn.Module):
+class TorusTransformerBlock(object):
     """Complete transformer block with torus attention"""
     
     def __init__(self, config: TorusAttentionConfig):
@@ -353,9 +355,9 @@ class TorusTransformerBlock(nn.Module):
         self.ln2 = nn.LayerNorm(config.d_model)
         
         # Residual enhancement with torus properties
-        self.residual_enhancer = nn.Parameter(torch.ones(1) * 0.9)
+        self.residual_enhancer = nn.Parameter(Tensor.ones(1) * 0.9)
         
-    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, Dict]:
+    def forward(self, x: Tensor, mask: Optional[Tensor] = None) -> Tuple[Tensor, Dict]:
         """Forward pass through torus transformer block"""
         
         # Torus self-attention with residual
@@ -392,7 +394,7 @@ def test_torus_attention():
     
     # Test data
     batch_size, seq_len = 4, 128
-    tokens = torch.randn(batch_size, seq_len, config.d_model)
+    tokens = Tensor.randn(batch_size, seq_len, config.d_model)
     
     print(f"\nInput shape: {tokens.shape}")
     

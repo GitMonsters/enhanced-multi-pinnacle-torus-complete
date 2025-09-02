@@ -37,9 +37,9 @@ Features:
 - Real-World Performance Optimization
 """
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+from tinygrad import nn
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Any, Union
 import logging
@@ -117,7 +117,7 @@ class SystemPerformanceMetrics:
     confidence: float = 0.0
     stability_score: float = 0.0
 
-class EnhancedMultiPinnacleSystem(nn.Module):
+class EnhancedMultiPinnacleSystem(object):
     """Complete production-ready consciousness system"""
     
     def __init__(self, config: Optional[EnhancedMultiPinnacleConfig] = None):
@@ -136,7 +136,7 @@ class EnhancedMultiPinnacleSystem(nn.Module):
         self.register_buffer('processing_count', torch.tensor(0, dtype=torch.long))
         self.register_buffer('error_count', torch.tensor(0, dtype=torch.long))
         
-    def forward(self, problem_input: torch.Tensor, 
+    def forward(self, problem_input: Tensor, 
                 return_detailed_analysis: bool = False) -> Dict[str, Any]:
         """Enhanced Multi-PINNACLE forward pass"""
         start_time = time.time()
@@ -225,12 +225,12 @@ def create_enhanced_system(config_path: Optional[str] = None) -> EnhancedMultiPi
 UNIVERSAL_MIND_GENERATOR = '''
 """Universal Mind Generator - Dynamic consciousness generation"""
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+from tinygrad import nn
 import numpy as np
 
-class UniversalMindGenerator(nn.Module):
+class UniversalMindGenerator(object):
     """Universal Mind Generator for dynamic consciousness generation"""
     
     def __init__(self, input_dim: int = 256, hidden_dim: int = 512, 
@@ -245,7 +245,7 @@ class UniversalMindGenerator(nn.Module):
         self.positional_encoding = self._create_positional_encoding(hidden_dim)
         
         # Multi-layer attention processing
-        self.attention_layers = nn.ModuleList([
+        self.attention_layers = list([
             UniversalAttentionLayer(hidden_dim, num_heads) 
             for _ in range(num_layers)
         ])
@@ -273,8 +273,8 @@ class UniversalMindGenerator(nn.Module):
         # Output projection
         self.output_projection = nn.Linear(hidden_dim, input_dim)
     
-    def forward(self, inputs: torch.Tensor, 
-                return_attention: bool = False) -> Dict[str, torch.Tensor]:
+    def forward(self, inputs: Tensor, 
+                return_attention: bool = False) -> Dict[str, Tensor]:
         """Forward pass through Universal Mind Generator"""
         
         # Input embedding and processing
@@ -308,7 +308,7 @@ class UniversalMindGenerator(nn.Module):
             'consciousness_state': consciousness_state,
             'insights': insights,
             'pattern_recognition': pattern_output.squeeze(1),
-            'universal_mind_coherence': torch.mean(torch.std(consciousness_state, dim=-1))
+            'universal_mind_coherence': Tensor.mean(Tensor.std(consciousness_state, dim=-1))
         }
         
         if return_attention:
@@ -316,7 +316,7 @@ class UniversalMindGenerator(nn.Module):
             
         return results
 
-class UniversalAttentionLayer(nn.Module):
+class UniversalAttentionLayer(object):
     """Universal attention layer with residual connections"""
     
     def __init__(self, hidden_dim: int, num_heads: int):
@@ -333,7 +333,7 @@ class UniversalAttentionLayer(nn.Module):
             nn.Dropout(0.1)
         )
     
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor]:
         """Forward pass with attention and feed-forward processing"""
         attn_output, attn_weights = self.attention(x, x, x, need_weights=True)
         x = self.norm1(x + attn_output)
@@ -350,11 +350,11 @@ class UniversalAttentionLayer(nn.Module):
 THREE_PRINCIPLES_FRAMEWORK = '''
 """Three Principles Framework - Mind, Consciousness, Thought integration"""
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+from tinygrad import nn
 
-class ThreePrinciplesFramework(nn.Module):
+class ThreePrinciplesFramework(object):
     """Three Principles Framework implementation"""
     
     def __init__(self, input_dim: int = 192, hidden_dim: int = 512):
@@ -426,7 +426,7 @@ class ThreePrinciplesFramework(nn.Module):
         # Psychological state modeling
         self.psychological_state = nn.GRU(input_dim, hidden_dim // 2, batch_first=True)
     
-    def forward(self, inputs: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, inputs: Tensor) -> Dict[str, Tensor]:
         """Forward pass through Three Principles Framework"""
         
         batch_size = inputs.shape[0]
@@ -443,7 +443,7 @@ class ThreePrinciplesFramework(nn.Module):
         thought_output = self.thought_processor(thought_input)
         
         # Integrate the three principles
-        combined_principles = torch.cat([mind_output, consciousness_output, thought_output], dim=-1)
+        combined_principles = Tensor.cat([mind_output, consciousness_output, thought_output], dim=-1)
         integrated_understanding = self.integration_network(combined_principles)
         
         # Extract wisdom and reality connection
@@ -457,7 +457,7 @@ class ThreePrinciplesFramework(nn.Module):
         
         # Calculate principle coherence
         principle_coherence = self._calculate_principle_coherence(mind_output, consciousness_output, thought_output)
-        creative_potential = torch.mean(torch.abs(thought_output), dim=-1, keepdim=True)
+        creative_potential = Tensor.mean(torch.abs(thought_output), dim=-1, keepdim=True)
         
         return {
             'mind_state': mind_output,

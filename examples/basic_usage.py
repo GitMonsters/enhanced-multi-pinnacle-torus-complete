@@ -10,7 +10,7 @@ Run this example:
     python examples/basic_usage.py
 """
 
-import torch
+from tinygrad.tensor import Tensor
 import sys
 from pathlib import Path
 
@@ -52,7 +52,7 @@ def main():
     print("\n🧪 Testing with Random Input...")
     try:
         # Create test input matching system's expected dimensions
-        test_input = torch.randn(2, system.config.total_consciousness_dim)
+        test_input = Tensor.randn(2, system.config.total_consciousness_dim)
         print(f"Input shape: {test_input.shape}")
         
         # Process through the system

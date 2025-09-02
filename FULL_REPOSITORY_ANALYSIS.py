@@ -13,9 +13,9 @@ by Perplexity and Grok to verify ALL claims including complexity improvements.
 # CORE TORUS TOPOLOGY IMPLEMENTATION - FULL CODE
 # =============================================================================
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+from tinygrad import nn
 import numpy as np
 import math
 from typing import Dict, List, Tuple, Optional, Union, Any, Callable
@@ -59,7 +59,7 @@ class TorusCoordinateSystem:
         self.coordinates = self._generate_torus_coordinates()
         self.major_loops, self.minor_loops = self._identify_fundamental_loops()
         
-    def _generate_torus_coordinates(self) -> torch.Tensor:
+    def _generate_torus_coordinates(self) -> Tensor:
         """Generate 3D coordinates for torus surface"""
         coords = []
         
@@ -102,7 +102,7 @@ class TorusCoordinateSystem:
         
         return major_loops, minor_loops
 
-class VortexFlowDynamics(nn.Module):
+class VortexFlowDynamics(object):
     """Implements vortexing code properties with spiral information flow"""
     
     def __init__(self, config: AdvancedTorusConfig, hidden_dim: int = 256):
@@ -112,7 +112,7 @@ class VortexFlowDynamics(nn.Module):
         self.total_nodes = config.total_nodes
         
         # Spiral flow parameters
-        self.spiral_weights = nn.Parameter(torch.randn(self.total_nodes, self.total_nodes) * 0.1)
+        self.spiral_weights = nn.Parameter(Tensor.randn(self.total_nodes, self.total_nodes) * 0.1)
         
         # Poloidal (short way) flow - COMPLEXITY: O(hidden_dim²)
         self.poloidal_flow = nn.Sequential(
@@ -142,16 +142,16 @@ class VortexFlowDynamics(nn.Module):
             nn.Tanh()
         )
     
-    def create_spiral_adjacency(self, coordinates: torch.Tensor) -> torch.Tensor:
+    def create_spiral_adjacency(self, coordinates: Tensor) -> Tensor:
         """Create spiral connectivity matrix - COMPLEXITY: O(total_nodes²)"""
-        adj = torch.zeros(self.total_nodes, self.total_nodes)
+        adj = Tensor.zeros(self.total_nodes, self.total_nodes)
         
         # CRITICAL COMPLEXITY ANALYSIS: O(total_nodes²) - This is the bottleneck!
         for i in range(self.total_nodes):
             for j in range(self.total_nodes):
                 if i != j:
                     # Calculate 3D distance - O(1)
-                    dist = torch.norm(coordinates[i] - coordinates[j])
+                    dist = Tensor.norm(coordinates[i] - coordinates[j])
                     
                     # Spiral connectivity based on helical paths - O(1)
                     spiral_factor = math.exp(-dist / self.config.spiral_pitch)
@@ -163,7 +163,7 @@ class VortexFlowDynamics(nn.Module):
         
         return adj
     
-    def forward(self, node_states: torch.Tensor, coordinates: torch.Tensor) -> Tuple[torch.Tensor, Dict]:
+    def forward(self, node_states: Tensor, coordinates: Tensor) -> Tuple[Tensor, Dict]:
         """Apply vortex dynamics to information flow - COMPLEXITY ANALYSIS"""
         batch_size, n_nodes, hidden_dim = node_states.shape
         
@@ -184,7 +184,7 @@ class VortexFlowDynamics(nn.Module):
         toroidal_flow = torch.bmm(spiral_adj_expanded, toroidal_states)
         
         # Energy conservation - O(batch_size * n_nodes * hidden_dim)
-        combined_flow = torch.cat([poloidal_flow, toroidal_flow], dim=-1)
+        combined_flow = Tensor.cat([poloidal_flow, toroidal_flow], dim=-1)
         conserved_energy = self.energy_conservator(combined_flow)
         
         # Apply energy conservation rate - O(batch_size * n_nodes * hidden_dim)
@@ -200,11 +200,11 @@ class VortexFlowDynamics(nn.Module):
         
         # Calculate vortex metrics
         vortex_metrics = {
-            'spiral_energy': torch.norm(spiral_adj).item(),
-            'poloidal_strength': torch.norm(poloidal_flow).item(),
-            'toroidal_strength': torch.norm(toroidal_flow).item(),
-            'energy_conservation': torch.mean(conserved_energy).item(),
-            'self_organization': torch.norm(self_organized).item(),
+            'spiral_energy': Tensor.norm(spiral_adj).item(),
+            'poloidal_strength': Tensor.norm(poloidal_flow).item(),
+            'toroidal_strength': Tensor.norm(toroidal_flow).item(),
+            'energy_conservation': Tensor.mean(conserved_energy).item(),
+            'self_organization': Tensor.norm(self_organized).item(),
             'complexity_analysis': {
                 'spiral_adjacency': 'O(total_nodes²)',
                 'circulation_bmm': 'O(batch_size * total_nodes² * hidden_dim)',
@@ -214,7 +214,7 @@ class VortexFlowDynamics(nn.Module):
         
         return final_states, vortex_metrics
 
-class DualPathwayProcessor(nn.Module):
+class DualPathwayProcessor(object):
     """Implements dual-pathway processing using major/minor circles"""
     
     def __init__(self, config: AdvancedTorusConfig, hidden_dim: int = 256):
@@ -247,8 +247,8 @@ class DualPathwayProcessor(nn.Module):
             nn.LayerNorm(hidden_dim)
         )
     
-    def forward(self, node_states: torch.Tensor, major_loops: List[List[int]], 
-                minor_loops: List[List[int]]) -> Tuple[torch.Tensor, Dict]:
+    def forward(self, node_states: Tensor, major_loops: List[List[int]], 
+                minor_loops: List[List[int]]) -> Tuple[Tensor, Dict]:
         """Process information through dual pathways - COMPLEXITY ANALYSIS"""
         batch_size, n_nodes, hidden_dim = node_states.shape
         
@@ -256,7 +256,7 @@ class DualPathwayProcessor(nn.Module):
         major_processed = []
         for loop in major_loops:
             loop_states = node_states[:, loop, :]  # Extract loop nodes
-            loop_mean = torch.mean(loop_states, dim=1, keepdim=True)
+            loop_mean = Tensor.mean(loop_states, dim=1, keepdim=True)
             major_output = self.major_pathway(loop_mean)  # O(hidden_dim²)
             major_processed.append(major_output)
         
@@ -264,13 +264,13 @@ class DualPathwayProcessor(nn.Module):
         minor_processed = []
         for loop in minor_loops:
             loop_states = node_states[:, loop, :]
-            loop_mean = torch.mean(loop_states, dim=1, keepdim=True) 
+            loop_mean = Tensor.mean(loop_states, dim=1, keepdim=True) 
             minor_output = self.minor_pathway(loop_mean)  # O(hidden_dim²)
             minor_processed.append(minor_output)
         
         # Integrate pathways
-        major_integrated = torch.cat(major_processed, dim=1)
-        minor_integrated = torch.cat(minor_processed, dim=1)
+        major_integrated = Tensor.cat(major_processed, dim=1)
+        minor_integrated = Tensor.cat(minor_processed, dim=1)
         
         # Ensure same dimensions for integration
         if major_integrated.shape[1] != minor_integrated.shape[1]:
@@ -279,7 +279,7 @@ class DualPathwayProcessor(nn.Module):
             minor_integrated = minor_integrated[:, :min_dim, :]
         
         # Combine pathways - O(batch_size * integrated_dim * hidden_dim²)
-        dual_pathway_input = torch.cat([major_integrated, minor_integrated], dim=-1)
+        dual_pathway_input = Tensor.cat([major_integrated, minor_integrated], dim=-1)
         integrated_output = self.pathway_integration(dual_pathway_input)
         
         # Distribute back to nodes with dual pathway weighting
@@ -294,9 +294,9 @@ class DualPathwayProcessor(nn.Module):
                                        (1 - weight) * node_states[:, i, :])
         
         pathway_metrics = {
-            'major_pathway_strength': torch.norm(major_integrated).item(),
-            'minor_pathway_strength': torch.norm(minor_integrated).item(),
-            'integration_efficiency': torch.norm(integrated_output).item(),
+            'major_pathway_strength': Tensor.norm(major_integrated).item(),
+            'minor_pathway_strength': Tensor.norm(minor_integrated).item(),
+            'integration_efficiency': Tensor.norm(integrated_output).item(),
             'complexity_analysis': {
                 'major_processing': f'O(batch_size * {len(major_loops)} * hidden_dim²)',
                 'minor_processing': f'O(batch_size * {len(minor_loops)} * hidden_dim²)',
@@ -307,7 +307,7 @@ class DualPathwayProcessor(nn.Module):
         
         return enhanced_states, pathway_metrics
 
-class AdvancedTorusTopology(nn.Module):
+class AdvancedTorusTopology(object):
     """Complete advanced torus topology with all topological advantages"""
     
     def __init__(self, config: AdvancedTorusConfig, hidden_dim: int = 256):
@@ -338,8 +338,8 @@ class AdvancedTorusTopology(nn.Module):
             nn.Tanh()
         )
     
-    def forward(self, node_states: torch.Tensor, 
-                temporal_sequence: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, Dict]:
+    def forward(self, node_states: Tensor, 
+                temporal_sequence: Optional[Tensor] = None) -> Tuple[Tensor, Dict]:
         """Forward pass through advanced torus topology - FULL COMPLEXITY ANALYSIS"""
         
         # Apply vortex dynamics with spiral flow - O(batch_size * total_nodes² * hidden_dim)
@@ -360,7 +360,7 @@ class AdvancedTorusTopology(nn.Module):
             recurrent_out, _ = self.temporal_recurrence(temporal_sequence)
             
             # Integrate temporal information
-            temporal_mean = torch.mean(recurrent_out, dim=1, keepdim=True)
+            temporal_mean = Tensor.mean(recurrent_out, dim=1, keepdim=True)
             pathway_states = pathway_states + 0.3 * temporal_mean
         
         # Genus-1 topology processing - O(batch_size * n_nodes * hidden_dim²)
@@ -373,9 +373,9 @@ class AdvancedTorusTopology(nn.Module):
         all_metrics = {
             **vortex_metrics,
             **pathway_metrics,
-            'genus_topology_strength': torch.norm(genus_states).item(),
-            'total_information_flow': torch.norm(final_states).item(),
-            'topological_coherence': torch.mean(torch.cosine_similarity(
+            'genus_topology_strength': Tensor.norm(genus_states).item(),
+            'total_information_flow': Tensor.norm(final_states).item(),
+            'topological_coherence': Tensor.mean(torch.cosine_similarity(
                 final_states[0], node_states[0], dim=-1
             )).item(),
             'COMPLEXITY_REALITY_CHECK': {
@@ -405,7 +405,7 @@ class TorusAttentionConfig:
     memory_retention: float = 0.9
     gradient_flow_factor: float = 1.2
 
-class TorusPositionalEncoding(nn.Module):
+class TorusPositionalEncoding(object):
     """Positional encoding on torus surface instead of linear positions"""
     
     def __init__(self, d_model: int, config: TorusAttentionConfig, max_len: int = 8192):
@@ -420,7 +420,7 @@ class TorusPositionalEncoding(nn.Module):
         ))
         
         # Map sequence positions to torus coordinates - COMPLEXITY: O(max_len * d_model)
-        pe = torch.zeros(max_len, d_model)
+        pe = Tensor.zeros(max_len, d_model)
         
         for pos in range(max_len):
             # Map linear position to torus parameters - O(1)
@@ -441,12 +441,12 @@ class TorusPositionalEncoding(nn.Module):
         
         self.register_buffer('pe', pe.unsqueeze(0))
     
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Add torus positional encoding - COMPLEXITY: O(batch_size * seq_len * d_model)"""
         seq_len = x.size(1)
         return x + self.pe[:, :seq_len]
 
-class VortexAttentionHead(nn.Module):
+class VortexAttentionHead(object):
     """Single attention head with vortex dynamics on torus"""
     
     def __init__(self, d_model: int, d_head: int, config: TorusAttentionConfig):
@@ -461,7 +461,7 @@ class VortexAttentionHead(nn.Module):
         self.v_proj = nn.Linear(d_model, d_head, bias=False)
         
         # Vortex dynamics parameters - COMPLEXITY: O(d_head²)
-        self.vortex_weights = nn.Parameter(torch.randn(d_head, d_head) * 0.1)
+        self.vortex_weights = nn.Parameter(Tensor.randn(d_head, d_head) * 0.1)
         
         # Circulation flow processors - COMPLEXITY: O(d_head²)
         self.poloidal_flow = nn.Linear(d_head, d_head, bias=False)
@@ -470,8 +470,8 @@ class VortexAttentionHead(nn.Module):
         # Memory retention mechanism - COMPLEXITY: O(d_head²)
         self.memory_gate = nn.Linear(d_head * 2, d_head)
         
-    def apply_vortex_dynamics(self, attention_weights: torch.Tensor, 
-                             values: torch.Tensor) -> torch.Tensor:
+    def apply_vortex_dynamics(self, attention_weights: Tensor, 
+                             values: Tensor) -> Tensor:
         """Apply vortex dynamics to attention and values - COMPLEXITY ANALYSIS"""
         batch_size, seq_len, d_head = values.shape
         
@@ -509,14 +509,14 @@ class VortexAttentionHead(nn.Module):
         
         return vortex_attention, combined_values
     
-    def apply_memory_retention(self, current_output: torch.Tensor,
-                              prev_memory: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def apply_memory_retention(self, current_output: Tensor,
+                              prev_memory: Optional[Tensor] = None) -> Tensor:
         """Apply memory retention via circulation loops - COMPLEXITY: O(batch_size * seq_len * d_head²)"""
         if prev_memory is None:
             return current_output
         
         # Combine current and previous memory - O(batch_size * seq_len * d_head)
-        memory_input = torch.cat([current_output, prev_memory], dim=-1)
+        memory_input = Tensor.cat([current_output, prev_memory], dim=-1)
         memory_gate = torch.sigmoid(self.memory_gate(memory_input))  # O(batch_size * seq_len * d_head²)
         
         # Apply retention rate - O(batch_size * seq_len * d_head)
@@ -528,9 +528,9 @@ class VortexAttentionHead(nn.Module):
         
         return retained_output
     
-    def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor,
-                mask: Optional[torch.Tensor] = None,
-                prev_memory: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, query: Tensor, key: Tensor, value: Tensor,
+                mask: Optional[Tensor] = None,
+                prev_memory: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
         """Forward pass with vortex dynamics - COMPLETE COMPLEXITY ANALYSIS"""
         
         # Project to Q, K, V - O(batch_size * seq_len * d_model * d_head)
@@ -569,7 +569,7 @@ class VortexAttentionHead(nn.Module):
         
         return output, vortex_attention
 
-class TorusMultiHeadAttention(nn.Module):
+class TorusMultiHeadAttention(object):
     """Multi-head attention with torus topology and vortex dynamics"""
     
     def __init__(self, config: TorusAttentionConfig):
@@ -582,7 +582,7 @@ class TorusMultiHeadAttention(nn.Module):
         assert config.d_model % config.n_heads == 0
         
         # Create attention heads with vortex dynamics
-        self.attention_heads = nn.ModuleList([
+        self.attention_heads = list([
             VortexAttentionHead(config.d_model, self.d_head, config)
             for _ in range(config.n_heads)
         ])
@@ -601,9 +601,9 @@ class TorusMultiHeadAttention(nn.Module):
         # Memory storage for circulation loops
         self.memory_storage = None
         
-    def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor,
-                mask: Optional[torch.Tensor] = None,
-                use_memory: bool = True) -> Tuple[torch.Tensor, Dict]:
+    def forward(self, query: Tensor, key: Tensor, value: Tensor,
+                mask: Optional[Tensor] = None,
+                use_memory: bool = True) -> Tuple[Tensor, Dict]:
         """Forward pass through torus multi-head attention - FULL COMPLEXITY ANALYSIS"""
         
         batch_size, seq_len, d_model = query.shape
@@ -631,7 +631,7 @@ class TorusMultiHeadAttention(nn.Module):
                 self.memory_storage[f'head_{i}'] = head_out.detach()
         
         # Concatenate head outputs - O(batch_size * seq_len * d_model)
-        concat_output = torch.cat(head_outputs, dim=-1)
+        concat_output = Tensor.cat(head_outputs, dim=-1)
         
         # Apply output projection - O(batch_size * seq_len * d_model²)
         output = self.output_proj(concat_output)
@@ -646,13 +646,13 @@ class TorusMultiHeadAttention(nn.Module):
         
         # Calculate torus-specific metrics with HONEST complexity analysis
         metrics = {
-            'attention_entropy': torch.mean(torch.sum(
+            'attention_entropy': Tensor.mean(torch.sum(
                 -head_attentions[0] * torch.log(head_attentions[0] + 1e-9), dim=-1
             )).item(),
             'vortex_strength': self.config.vortex_strength,
             'memory_retention': len(self.memory_storage) if self.memory_storage else 0,
-            'gradient_flow': torch.norm(enhanced_output - output).item(),
-            'circulation_coherence': torch.mean(torch.cosine_similarity(
+            'gradient_flow': Tensor.norm(enhanced_output - output).item(),
+            'circulation_coherence': Tensor.mean(torch.cosine_similarity(
                 head_outputs[0].flatten(1), head_outputs[-1].flatten(1), dim=-1
             )).item() if len(head_outputs) > 1 else 1.0,
             'COMPLEXITY_REALITY_CHECK': {
@@ -668,9 +668,9 @@ class TorusMultiHeadAttention(nn.Module):
         
         return final_output, metrics
 
-def apply_torus_attention(tokens: torch.Tensor, 
-                         attention_weights: Optional[torch.Tensor] = None,
-                         config: Optional[TorusAttentionConfig] = None) -> torch.Tensor:
+def apply_torus_attention(tokens: Tensor, 
+                         attention_weights: Optional[Tensor] = None,
+                         config: Optional[TorusAttentionConfig] = None) -> Tensor:
     """
     Apply torus attention mechanism with vortexing code properties
     
@@ -761,7 +761,7 @@ class SystemPerformanceMetrics:
     total_inferences: int = 0
     error_rate: float = 0.0
 
-class EnhancedMultiPinnacleSystem(nn.Module):
+class EnhancedMultiPinnacleSystem(object):
     """
     Enhanced Multi-PINNACLE Consciousness System with Torus Integration
     =================================================================
@@ -933,12 +933,12 @@ class EnhancedMultiPinnacleSystem(nn.Module):
         self.gradient_accumulation_steps = 4
         self.memory_cleanup_interval = self.config.memory_cleanup_interval
     
-    def _validate_input(self, problem_input: torch.Tensor) -> torch.Tensor:
+    def _validate_input(self, problem_input: Tensor) -> Tensor:
         """Production input validation with error handling"""
         try:
             # Check basic tensor properties
-            if not isinstance(problem_input, torch.Tensor):
-                raise TypeError(f"Expected torch.Tensor, got {type(problem_input)}")
+            if not isinstance(problem_input, Tensor):
+                raise TypeError(f"Expected Tensor, got {type(problem_input)}")
             
             if problem_input.dim() < 2:
                 problem_input = problem_input.unsqueeze(0)
@@ -972,9 +972,9 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             logger.error(f"❌ Input validation failed: {e}")
             # Return zero tensor as fallback
             batch_size = 1 if problem_input.dim() == 1 else problem_input.shape[0]
-            return torch.zeros(batch_size, self.config.total_consciousness_dim)
+            return Tensor.zeros(batch_size, self.config.total_consciousness_dim)
     
-    def _extract_framework_inputs(self, problem_input: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def _extract_framework_inputs(self, problem_input: Tensor) -> Dict[str, Tensor]:
         """Extract inputs for each consciousness framework"""
         
         # Split input tensor by framework dimensions
@@ -1010,7 +1010,7 @@ class EnhancedMultiPinnacleSystem(nn.Module):
         
         return framework_inputs
     
-    def forward(self, problem_input: torch.Tensor, 
+    def forward(self, problem_input: Tensor, 
                 return_detailed_analysis: bool = False) -> Dict[str, Any]:
         """Enhanced Multi-PINNACLE forward pass with COMPLETE complexity analysis"""
         start_time = time.time()
@@ -1145,81 +1145,81 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             # Return error state
             batch_size = problem_input.shape[0] if hasattr(problem_input, 'shape') else 1
             return {
-                'arc_solution': torch.zeros(batch_size, 900),
-                'master_consciousness': torch.zeros(batch_size, self.config.base_dim),
-                'confidence': torch.zeros(batch_size, 1),
-                'consciousness_coherence': torch.zeros(batch_size, 1),
+                'arc_solution': Tensor.zeros(batch_size, 900),
+                'master_consciousness': Tensor.zeros(batch_size, self.config.base_dim),
+                'confidence': Tensor.zeros(batch_size, 1),
+                'consciousness_coherence': Tensor.zeros(batch_size, 1),
                 'processing_time': time.time() - start_time,
                 'batch_size': batch_size,
                 'success': False,
                 'error': str(e)
             }
     
-    def _process_universal_mind(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_universal_mind(self, inputs: Tensor) -> Tensor:
         """Process through Universal Mind Generator"""
         try:
             return self.universal_mind(inputs)
         except Exception as e:
             logger.warning(f"Universal Mind processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_three_principles(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_three_principles(self, inputs: Tensor) -> Tensor:
         """Process through Three Principles Framework"""
         try:
             return self.three_principles(inputs)
         except Exception as e:
             logger.warning(f"Three Principles processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_deschooling_society(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_deschooling_society(self, inputs: Tensor) -> Tensor:
         """Process through Deschooling Society Integration"""
         try:
             return self.deschooling_society(inputs)
         except Exception as e:
             logger.warning(f"Deschooling Society processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_transcendent_states(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_transcendent_states(self, inputs: Tensor) -> Tensor:
         """Process through Transcendent States Processor"""
         try:
             return self.transcendent_states(inputs)
         except Exception as e:
             logger.warning(f"Transcendent States processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_hrm_cycles(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_hrm_cycles(self, inputs: Tensor) -> Tensor:
         """Process through HRM Cycles Manager"""
         try:
             return self.hrm_cycles(inputs)
         except Exception as e:
             logger.warning(f"HRM Cycles processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_consequential_thinking(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_consequential_thinking(self, inputs: Tensor) -> Tensor:
         """Process through Consequential Thinking Engine"""
         try:
             return self.consequential_thinking(inputs)
         except Exception as e:
             logger.warning(f"Consequential Thinking processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_creative_states(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_creative_states(self, inputs: Tensor) -> Tensor:
         """Process through Creative States Processor"""
         try:
             return self.creative_states(inputs)
         except Exception as e:
             logger.warning(f"Creative States processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_adaptive_reasoning(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_adaptive_reasoning(self, inputs: Tensor) -> Tensor:
         """Process through Adaptive Reasoning Pathways"""
         try:
             return self.adaptive_reasoning(inputs)
         except Exception as e:
             logger.warning(f"Adaptive Reasoning processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_torus_topology(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_torus_topology(self, inputs: Tensor) -> Tensor:
         """Process through Advanced Torus Topology with vortex dynamics"""
         try:
             # Reshape for torus topology processing
@@ -1252,9 +1252,9 @@ class EnhancedMultiPinnacleSystem(nn.Module):
                 
         except Exception as e:
             logger.warning(f"Torus Topology processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _process_torus_attention(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _process_torus_attention(self, inputs: Tensor) -> Tensor:
         """Process through Torus Attention Mechanism with superior sequential modeling"""
         try:
             # Reshape for attention processing
@@ -1289,21 +1289,21 @@ class EnhancedMultiPinnacleSystem(nn.Module):
                 
         except Exception as e:
             logger.warning(f"Torus Attention processing error: {e}")
-            return torch.zeros(inputs.shape[0], self.config.base_dim)
+            return Tensor.zeros(inputs.shape[0], self.config.base_dim)
     
-    def _merge_consciousness(self, framework_outputs: Dict[str, torch.Tensor]) -> torch.Tensor:
+    def _merge_consciousness(self, framework_outputs: Dict[str, Tensor]) -> Tensor:
         """Merge all consciousness framework outputs"""
         try:
             # Concatenate all framework outputs (now 10 frameworks including torus)
             outputs_list = [framework_outputs[key] for key in sorted(framework_outputs.keys())]
-            merged = torch.cat(outputs_list, dim=-1)  # O(batch_size * 10 * base_dim)
+            merged = Tensor.cat(outputs_list, dim=-1)  # O(batch_size * 10 * base_dim)
             return self.consciousness_merger(merged)  # O(batch_size * 10 * base_dim * base_dim)
         except Exception as e:
             logger.warning(f"Consciousness merger error: {e}")
             batch_size = next(iter(framework_outputs.values())).shape[0]
-            return torch.zeros(batch_size, self.config.base_dim)
+            return Tensor.zeros(batch_size, self.config.base_dim)
     
-    def _manage_state(self, merged_consciousness: torch.Tensor) -> torch.Tensor:
+    def _manage_state(self, merged_consciousness: Tensor) -> Tensor:
         """Manage consciousness state"""
         try:
             return self.state_manager(merged_consciousness)  # O(batch_size * base_dim²)
@@ -1311,14 +1311,14 @@ class EnhancedMultiPinnacleSystem(nn.Module):
             logger.warning(f"State management error: {e}")
             return merged_consciousness
     
-    def _calculate_consciousness_metrics(self, framework_outputs: Dict[str, torch.Tensor]) -> Dict[str, Any]:
+    def _calculate_consciousness_metrics(self, framework_outputs: Dict[str, Tensor]) -> Dict[str, Any]:
         """Calculate consciousness metrics across all frameworks"""
         try:
             metrics = {}
             
             # Individual framework strengths
             for framework_name, output in framework_outputs.items():
-                metrics[f'{framework_name}_strength'] = torch.norm(output).item()
+                metrics[f'{framework_name}_strength'] = Tensor.norm(output).item()
             
             # Overall consciousness coherence
             outputs_list = list(framework_outputs.values())
@@ -1437,7 +1437,7 @@ def analyze_complexity_bottlenecks(system: EnhancedMultiPinnacleSystem,
             print(f"Testing batch_size={batch_size}, seq_len={seq_len}")
             
             # Create test input
-            test_input = torch.randn(batch_size, system.config.total_consciousness_dim)
+            test_input = Tensor.randn(batch_size, system.config.total_consciousness_dim)
             
             # Measure processing time
             start_time = time.time()
@@ -1615,7 +1615,7 @@ def test_complete_system():
     # Test forward pass with complexity analysis
     print(f"\n🔬 Testing system with complexity analysis...")
     batch_size, input_dim = 4, config.total_consciousness_dim
-    test_input = torch.randn(batch_size, input_dim)
+    test_input = Tensor.randn(batch_size, input_dim)
     
     # Forward pass with detailed analysis
     start_time = time.time()

@@ -14,7 +14,7 @@ Features:
 - Production monitoring and alerting
 """
 
-import torch
+from tinygrad.tensor import Tensor
 import numpy as np
 import json
 import logging
@@ -320,7 +320,7 @@ class IntelligentCheckpointManager:
         
         logger.info(f"🧠 Intelligent Checkpoint Manager initialized: {checkpoint_dir}")
     
-    def save_checkpoint(self, model: torch.nn.Module, metadata: ModelMetadata, 
+    def save_checkpoint(self, model: object, metadata: ModelMetadata, 
                        additional_data: Dict[str, Any] = None) -> str:
         """Save intelligent checkpoint with metadata"""
         
@@ -363,7 +363,7 @@ class IntelligentCheckpointManager:
         
         return checkpoint_path
     
-    def calculate_model_hash(self, model: torch.nn.Module) -> str:
+    def calculate_model_hash(self, model: object) -> str:
         """Calculate hash of model architecture"""
         # Create architecture fingerprint
         arch_info = []
@@ -682,7 +682,7 @@ class ModelDeploymentManager:
         
         logger.info(f"🚀 Model Deployment Manager initialized (strategy: {strategy.strategy_type})")
     
-    def deploy_model(self, model: torch.nn.Module, metadata: ModelMetadata) -> bool:
+    def deploy_model(self, model: object, metadata: ModelMetadata) -> bool:
         """Deploy model using configured strategy"""
         logger.info(f"🚀 Starting {self.strategy.strategy_type} deployment for model: {metadata.model_id}")
         
@@ -727,7 +727,7 @@ class ModelDeploymentManager:
             logger.error(f"❌ Deployment error: {e}")
             return False
     
-    def blue_green_deployment(self, model: torch.nn.Module, metadata: ModelMetadata) -> bool:
+    def blue_green_deployment(self, model: object, metadata: ModelMetadata) -> bool:
         """Blue-green deployment strategy"""
         logger.info("💙 Starting blue-green deployment...")
         
@@ -753,7 +753,7 @@ class ModelDeploymentManager:
             logger.error("❌ Blue-green deployment validation failed")
             return False
     
-    def canary_deployment(self, model: torch.nn.Module, metadata: ModelMetadata) -> bool:
+    def canary_deployment(self, model: object, metadata: ModelMetadata) -> bool:
         """Canary deployment strategy"""
         logger.info(f"🐤 Starting canary deployment ({self.strategy.canary_percentage:.1%} traffic)...")
         
@@ -778,7 +778,7 @@ class ModelDeploymentManager:
         logger.info("✅ Canary deployment successful, promoting to full traffic")
         return True
     
-    def rolling_deployment(self, model: torch.nn.Module, metadata: ModelMetadata) -> bool:
+    def rolling_deployment(self, model: object, metadata: ModelMetadata) -> bool:
         """Rolling deployment strategy"""
         logger.info(f"🌊 Starting rolling deployment (batch size: {self.strategy.rolling_batch_size})...")
         
@@ -806,13 +806,13 @@ class ModelDeploymentManager:
         logger.info("✅ Rolling deployment completed successfully")
         return True
     
-    def simulate_warmup(self, model: torch.nn.Module, num_requests: int) -> bool:
+    def simulate_warmup(self, model: object, num_requests: int) -> bool:
         """Simulate model warmup"""
         model.eval()
         
         with torch.no_grad():
             for _ in range(min(num_requests, 10)):  # Limit for demo
-                dummy_input = torch.randn(1, 1000)  # Simplified
+                dummy_input = Tensor.randn(1, 1000)  # Simplified
                 try:
                     output = model(dummy_input)
                     if not isinstance(output, dict) or 'arc_solution' not in output:
@@ -823,7 +823,7 @@ class ModelDeploymentManager:
         
         return True
     
-    def validate_deployment(self, model: torch.nn.Module, metadata: ModelMetadata) -> bool:
+    def validate_deployment(self, model: object, metadata: ModelMetadata) -> bool:
         """Validate deployment"""
         # Simulate validation tests
         validation_tests = [
@@ -844,12 +844,12 @@ class ModelDeploymentManager:
         validation_score = passed_tests / len(validation_tests)
         return validation_score >= self.strategy.validation_threshold
     
-    def simulate_health_check(self, model: torch.nn.Module) -> bool:
+    def simulate_health_check(self, model: object) -> bool:
         """Simulate health check"""
         try:
             model.eval()
             with torch.no_grad():
-                dummy_input = torch.randn(1, 1000)
+                dummy_input = Tensor.randn(1, 1000)
                 output = model(dummy_input)
                 return isinstance(output, dict) and 'arc_solution' in output
         except Exception as e:
@@ -907,7 +907,7 @@ class ModelManagementSystem:
         
         logger.info("🎛️ Complete Model Management System initialized")
     
-    def register_model(self, model: torch.nn.Module, metadata: ModelMetadata,
+    def register_model(self, model: object, metadata: ModelMetadata,
                       auto_select: bool = True) -> str:
         """Register new model in management system"""
         logger.info(f"📝 Registering model: {metadata.model_id}")
@@ -956,12 +956,12 @@ class ModelManagementSystem:
         
         return success
     
-    def create_model_from_checkpoint(self, checkpoint: Dict[str, Any]) -> torch.nn.Module:
+    def create_model_from_checkpoint(self, checkpoint: Dict[str, Any]) -> object:
         """Create model from checkpoint (simplified implementation)"""
         # In practice, this would reconstruct the full consciousness system
         # For now, create a simple mock model
         
-        class MockDeploymentModel(torch.nn.Module):
+        class MockDeploymentModel(object):
             def __init__(self):
                 super().__init__()
                 self.processor = torch.nn.Sequential(
@@ -1090,7 +1090,7 @@ if __name__ == "__main__":
     )
     
     # Create test models
-    class MockModel(torch.nn.Module):
+    class MockModel(object):
         def __init__(self, model_id: str):
             super().__init__()
             self.model_id = model_id

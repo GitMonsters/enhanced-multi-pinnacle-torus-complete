@@ -14,12 +14,12 @@ Features:
 - Mixed precision training for efficiency
 """
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
+from tinygrad.tensor import Tensor
+from tinygrad import nn
+from tinygrad.tensor import Tensor.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, OneCycleLR
 from torch.cuda.amp import GradScaler, autocast
-import torch.distributed as dist
+from tinygrad.tensor import Tensor.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 import numpy as np
 import json
@@ -373,7 +373,7 @@ class MultiDomainDataLoader:
         weights = [self.config.domain_weights.get(domain, 1.0) for domain in suitable_domains]
         return np.random.choice(suitable_domains, p=np.array(weights) / np.sum(weights))
 
-class ConsciousnessLossFunction(nn.Module):
+class ConsciousnessLossFunction(object):
     """Advanced loss function for consciousness training"""
     
     def __init__(self, config: TrainingConfig):
@@ -396,8 +396,8 @@ class ConsciousnessLossFunction(nn.Module):
         self.bce_loss = nn.BCEWithLogitsLoss()
         self.ce_loss = nn.CrossEntropyLoss(label_smoothing=config.label_smoothing)
         
-    def forward(self, outputs: Dict[str, torch.Tensor], 
-                targets: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    def forward(self, outputs: Dict[str, Tensor], 
+                targets: Dict[str, Tensor]) -> Dict[str, Tensor]:
         """Calculate comprehensive consciousness loss"""
         losses = {}
         
@@ -606,24 +606,24 @@ class AdvancedConsciousnessTrainer:
         self.consciousness_awakening_level = level
         return level
     
-    def prepare_batch_data(self, batch_data: Dict[str, Any], consciousness_level: float) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+    def prepare_batch_data(self, batch_data: Dict[str, Any], consciousness_level: float) -> Tuple[Tensor, Dict[str, Tensor]]:
         """Prepare batch data for training"""
         try:
             samples = batch_data['samples']
             batch_size = len(samples)
             
             # Convert to tensors (simplified)
-            consciousness_input = torch.randn(batch_size, self.model.config.total_consciousness_dim)
+            consciousness_input = Tensor.randn(batch_size, self.model.config.total_consciousness_dim)
             
             # Create targets
             targets = {
-                'arc_target': torch.randn(batch_size, 900),  # ARC solution target
+                'arc_target': Tensor.randn(batch_size, 900),  # ARC solution target
                 'consciousness_level': torch.tensor(consciousness_level)
             }
             
             # Move to device
             consciousness_input = consciousness_input.to(self.device)
-            targets = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v 
+            targets = {k: v.to(self.device) if isinstance(v, Tensor) else v 
                       for k, v in targets.items()}
             
             return consciousness_input, targets
@@ -632,8 +632,8 @@ class AdvancedConsciousnessTrainer:
             logger.error(f"❌ Batch preparation failed: {e}")
             # Return dummy data
             batch_size = self.config.batch_size
-            consciousness_input = torch.randn(batch_size, 1000).to(self.device)
-            targets = {'arc_target': torch.randn(batch_size, 900).to(self.device)}
+            consciousness_input = Tensor.randn(batch_size, 1000).to(self.device)
+            targets = {'arc_target': Tensor.randn(batch_size, 900).to(self.device)}
             return consciousness_input, targets
     
     def train_epoch(self) -> Dict[str, float]:
@@ -700,7 +700,7 @@ class AdvancedConsciousnessTrainer:
                 
                 # Track losses
                 for loss_name, loss_value in losses.items():
-                    if isinstance(loss_value, torch.Tensor):
+                    if isinstance(loss_value, Tensor):
                         epoch_losses[loss_name].append(loss_value.item())
                 
                 # Update progress bar
@@ -725,7 +725,7 @@ class AdvancedConsciousnessTrainer:
         
         return epoch_metrics
     
-    def extract_loss_components(self, outputs: Dict[str, Any]) -> Dict[str, torch.Tensor]:
+    def extract_loss_components(self, outputs: Dict[str, Any]) -> Dict[str, Tensor]:
         """Extract components needed for loss calculation"""
         loss_components = {}
         
@@ -750,7 +750,7 @@ class AdvancedConsciousnessTrainer:
         """Get current learning rate"""
         return self.optimizer.param_groups[0]['lr']
     
-    def log_step_metrics(self, losses: Dict[str, torch.Tensor], 
+    def log_step_metrics(self, losses: Dict[str, Tensor], 
                         consciousness_level: float, batch_data: Dict[str, Any]):
         """Log step metrics to wandb"""
         if not self.config.use_wandb:
@@ -764,7 +764,7 @@ class AdvancedConsciousnessTrainer:
         
         # Add losses
         for loss_name, loss_value in losses.items():
-            if isinstance(loss_value, torch.Tensor):
+            if isinstance(loss_value, Tensor):
                 metrics[f'train/{loss_name}'] = loss_value.item()
         
         # Add domain distribution
@@ -937,7 +937,7 @@ if __name__ == "__main__":
             self.config = ProductionConsciousnessConfig()
             
         def parameters(self):
-            return [torch.randn(100, 100, requires_grad=True)]
+            return [Tensor.randn(100, 100, requires_grad=True)]
         
         def to(self, device):
             return self
@@ -949,12 +949,12 @@ if __name__ == "__main__":
             pass
         
         def state_dict(self):
-            return {'test': torch.randn(10)}
+            return {'test': Tensor.randn(10)}
         
         def __call__(self, inputs, return_detailed_analysis=False):
             batch_size = inputs.shape[0]
             return {
-                'arc_solution': torch.randn(batch_size, 900),
+                'arc_solution': Tensor.randn(batch_size, 900),
                 'success': True,
                 'processor_results': {
                     'universal_mind': {
